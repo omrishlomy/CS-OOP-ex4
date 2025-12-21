@@ -51,7 +51,7 @@ public class Platformer extends GameManager {
 
     public static void main(String[] args) {
         new Platformer().run();
-    }
+   }
 }
 
 class Avatar extends GameObject {
