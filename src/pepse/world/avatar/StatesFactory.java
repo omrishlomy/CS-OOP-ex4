@@ -16,43 +16,35 @@ public class StatesFactory {
     private static class GroundState implements AvatarState {
         @Override
         public void update(Avatar avatar, UserInputListener listener) {
-            boolean running = false;
-            boolean jumping = false;
             int xVelocity = 0;
+            int yVelocity = 0;
+            int energyCost = 0;
             int avatarEnergy = avatar.getEnergy();
             // on the ground it costs to run - so check we have enough energy
             if (avatarEnergy >= REQUIRED_FOR_RUN) {
                 if (listener.isKeyPressed(KeyEvent.VK_LEFT)) {
-                    xVelocity -= Avatar.AVATAR_X_VELOCITY;
+                    xVelocity -= 1;
                 }
                 if (listener.isKeyPressed(KeyEvent.VK_RIGHT)) {
-                    xVelocity += Avatar.AVATAR_X_VELOCITY;
+                    xVelocity += 1;
                 }
             }
-            if (xVelocity != 0) {
-                running = true;
+
+            if (xVelocity != 0){
+                energyCost += REQUIRED_FOR_RUN;
             }
-            avatar.transform().setVelocityX(xVelocity);
 
             if (avatarEnergy >= REQUIRED_FOR_JUMP) {
                 if (listener.isKeyPressed(KeyEvent.VK_SPACE)) {
-                    avatar.transform().setVelocityY(Avatar.AVATAR_Y_VELOCITY);
-                    jumping = true;
+                    yVelocity = 1;
+                    energyCost+= REQUIRED_FOR_JUMP;
                 }
             }
+            avatar.movePlayer(xVelocity, yVelocity, energyCost);
 
-            // subtract energy if running
-            if (running) {
-                avatar.subtructFromEnergy(REQUIRED_FOR_RUN);
-            }
-            // subtract energy for jumping and set state as air state
-            if (jumping) {
-                avatar.subtructFromEnergy(REQUIRED_FOR_JUMP);
-                avatar.setState(airState);
-            }
-            // if idle, add energy.
-            if (!running && !jumping) {
+            if (xVelocity == 0 && yVelocity == 0 ){
                 avatar.addEnergy(IDLE_ADDED_ENERGY);
+                avatar.idleState();
             }
         }
     }
@@ -62,30 +54,28 @@ public class StatesFactory {
         public void update(Avatar avatar, UserInputListener listener) {
             boolean jumping = false;
             int xVelocity = 0;
+            int yVelocity = 0;
+            int energyCost = 0;
             // in the air we can "run" with no costs.
             if (listener.isKeyPressed(KeyEvent.VK_LEFT)){
-                xVelocity -= Avatar.AVATAR_X_VELOCITY;
+                xVelocity -= 1;
             }
             if (listener.isKeyPressed(KeyEvent.VK_RIGHT)){
-                xVelocity += Avatar.AVATAR_X_VELOCITY;
+                xVelocity += 1;
             }
-            avatar.transform().setVelocityX(xVelocity);
 
             // we are already in the air - so jumping is actually double jumping.
             int avatarEnergy = avatar.getEnergy();
             if (avatar.getVelocity().y() > 0 && avatarEnergy >=REQUIRED_FOR_DOUBLE_JUMP){
                 if (listener.isKeyPressed(KeyEvent.VK_SPACE)){
-                    avatar.transform().setVelocityY(Avatar.AVATAR_Y_VELOCITY);
-                    jumping = true;
+                    yVelocity = 1;
+                    energyCost+= REQUIRED_FOR_DOUBLE_JUMP;
                 }
             }
-            //subtract energy for double jumping
-            if (jumping){
-                avatar.subtructFromEnergy(REQUIRED_FOR_DOUBLE_JUMP);
-            }
-            // if we are not in the air, move to ground state.
-            if (avatar.getVelocity().y() == 0) {
-                avatar.setState(groundState);
+            avatar.movePlayer(xVelocity, yVelocity, energyCost);
+
+            if (xVelocity == 0 && yVelocity == 0) {
+                avatar.jumpState();
             }
         }
     }
