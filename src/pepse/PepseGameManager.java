@@ -23,7 +23,6 @@ import java.util.List;
 
 // TODO: this is just to check the avatar function. NEED TO CHANGE!
 public class PepseGameManager extends GameManager {
-    private static final Color BACKGROUND_COLOR = Color.decode("#80C6E5");
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
 
     @Override
