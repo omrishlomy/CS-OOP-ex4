@@ -15,6 +15,7 @@ import danogl.util.Vector2;
 import pepse.utils.pepse.world.avatar.Avatar;
 import pepse.utils.pepse.world.avatar.EnergyDisplay;
 import pepse.utils.pepse.world.trees.Flora;
+import pepse.utils.pepse.world.Sky;
 
 import java.awt.*;
 import java.util.*;
@@ -30,14 +31,9 @@ public class PepseGameManager extends GameManager {
         super.initializeGame(imageReader, soundReader, inputListener, windowController);
 
         //background
-        var background =
-                new GameObject(
-                        Vector2.ZERO,
-                        windowController.getWindowDimensions(),
-                        new RectangleRenderable(BACKGROUND_COLOR)
-                );
-        background.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
-        gameObjects().addGameObject(background, Layer.BACKGROUND);
+        var sky = Sky.create(windowController.getWindowDimensions());
+        sky.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
+        gameObjects().addGameObject(sky, Layer.BACKGROUND);
 
         placePlatform(Vector2.of(-1024, 1000), Vector2.ONES.mult(2048));
         placePlatform(Vector2.of(-512, 700), Vector2.of(1024, 50));
