@@ -17,9 +17,9 @@ import java.util.function.Consumer;
  * @see danogl.GameObject
  */
 public class Avatar extends GameObject {
-    static final double TIME_BETWEEN_CLIPS = 0.3;
-    static final int MAX_NUM_OBSERVERS = 100;
-    static final Vector2 AVATAR_DIMENSIOMS = Vector2.of(40, 50);
+    private static final double TIME_BETWEEN_CLIPS = 0.3;
+    private static final int MAX_NUM_OBSERVERS = 100;
+    private static final Vector2 AVATAR_DIMENSIOMS = Vector2.of(40, 50);
 
     private static final String[] IDLE_PATHS = {"src\\assets\\idle_0.png",
             "src\\assets\\idle_1.png", "src\\assets\\idle_2.png", "src\\assets\\idle_3.png"};
@@ -28,10 +28,12 @@ public class Avatar extends GameObject {
             "src\\assets\\run_4.png", "src\\assets\\run_5.png"};
     private static final String[] JUMP_PATHS = {"src\\assets\\jump_0.png",
             "src\\assets\\jump_1.png", "src\\assets\\jump_2.png", "src\\assets\\jump_3.png"};
+
     private static final float AVATAR_X_VELOCITY = 400;
     private static final float AVATAR_Y_VELOCITY = -650;
     private static final float GRAVITY = 600;
     private static final int MAX_ENERGY = 100;
+    private static final float  VERTICAL_COLLISION_NORMAL = -0.9f;
 
     private final LocationObserver[] locationObservers = new LocationObserver[MAX_NUM_OBSERVERS];
     private final UserInputListener inputListener;
@@ -114,7 +116,7 @@ public class Avatar extends GameObject {
     public void onCollisionEnter(GameObject other, Collision collision) {
         super.onCollisionEnter(other, collision);
         // if we collided with the ground, move to ground state.
-        if (other.getTag().equals("Block")) {
+        if (other.getTag().equals("Block") && collision.getNormal().y() < VERTICAL_COLLISION_NORMAL) {
             setState(StatesFactory.groundState);
             this.transform().setVelocityY(0);
         }

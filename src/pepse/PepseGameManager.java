@@ -25,6 +25,8 @@ public class PepseGameManager extends GameManager {
     private static final Color BACKGROUND_COLOR = Color.decode("#80C6E5");
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
 
+    private Avatar avatar;
+
     @Override
     public void initializeGame(ImageReader imageReader, SoundReader soundReader, UserInputListener inputListener, WindowController windowController) {
         super.initializeGame(imageReader, soundReader, inputListener, windowController);
@@ -39,34 +41,35 @@ public class PepseGameManager extends GameManager {
         background.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
         gameObjects().addGameObject(background, Layer.BACKGROUND);
 
+        EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
+        gameObjects().addGameObject(energyDisplay, Layer.UI);
+
+        var avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader,
+                energyDisplay::updateEnergyDisplay);
+        setCamera(new Camera(avatar, Vector2.ZERO,
+                windowController.getWindowDimensions(), windowController.getWindowDimensions()));
+        gameObjects().addGameObject(avatar, Layer.DEFAULT);
+        this.avatar = avatar;
+
         placePlatform(Vector2.of(-1024, 1000), Vector2.ONES.mult(2048));
         placePlatform(Vector2.of(-512, 700), Vector2.of(1024, 50));
         placePlatform(Vector2.of(-256, 400), Vector2.of(512, 50));
         placePlatform(Vector2.of(-128, 100), Vector2.of(256, 50));
 
-        EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
-        gameObjects().addGameObject(energyDisplay, Layer.UI);
-
-        var avatar = new Avatar(Vector2.of(0, 900), inputListener, imageReader,
-                energyDisplay::updateEnergyDisplay);
-        setCamera(new Camera(avatar, Vector2.ZERO,
-                windowController.getWindowDimensions(), windowController.getWindowDimensions()));
-        gameObjects().addGameObject(avatar);
-    }
-
-    private void placePlatform(Vector2 pos, Vector2 size) {
-        var platform = new GameObject(pos, size, new RectangleRenderable(PLATFORM_COLOR));
-        platform.physics().preventIntersectionsFromDirection(Vector2.UP);
-        platform.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
-        platform.setTag("Block");
-        gameObjects().addGameObject(platform, Layer.STATIC_OBJECTS);
-
         // add trees
-        Flora flora = new Flora(Integer->1000, 42);
+        Flora flora = new Flora(Integer->1000, avatar::addEnergy, 42);
         List<GameObject> tree = flora.createInRange(-1024, 1024);
         for (GameObject gameObject : tree) {
             gameObjects().addGameObject(gameObject, Layer.STATIC_OBJECTS);
         }
+    }
+
+    private void placePlatform(Vector2 pos, Vector2 size) {
+        var platform = new GameObject(pos, size, new RectangleRenderable(PLATFORM_COLOR));
+        platform.physics().preventIntersectionsFromDirection(Vector2.ZERO);
+        platform.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
+        platform.setTag("Block");
+        gameObjects().addGameObject(platform, Layer.STATIC_OBJECTS);
     }
 
     public static void main(String[] args) {

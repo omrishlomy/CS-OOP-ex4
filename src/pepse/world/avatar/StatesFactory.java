@@ -9,7 +9,7 @@ public class StatesFactory {
     private static final int REQUIRED_FOR_RUN = 2;
     private static final int REQUIRED_FOR_DOUBLE_JUMP = 50;
     private static final int IDLE_ADDED_ENERGY = 1;
-    private static final int THRESHOLD_FOR_Y_MOVEMENT = 10;
+    private static final int THRESHOLD_FOR_Y_MOVEMENT = 100;
 
     public static final AvatarState groundState = new GroundState();
     public static final AvatarState airState = new AirState();
