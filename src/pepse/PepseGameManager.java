@@ -15,6 +15,7 @@ import danogl.util.Vector2;
 import pepse.utils.pepse.world.avatar.Avatar;
 import pepse.utils.pepse.world.avatar.EnergyDisplay;
 import pepse.utils.pepse.world.trees.Flora;
+import pepse.utils.pepse.world.Sky;
 
 import java.awt.*;
 import java.util.*;
@@ -22,7 +23,6 @@ import java.util.List;
 
 // TODO: this is just to check the avatar function. NEED TO CHANGE!
 public class PepseGameManager extends GameManager {
-    private static final Color BACKGROUND_COLOR = Color.decode("#80C6E5");
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
 
     private Avatar avatar;
@@ -32,14 +32,9 @@ public class PepseGameManager extends GameManager {
         super.initializeGame(imageReader, soundReader, inputListener, windowController);
 
         //background
-        var background =
-                new GameObject(
-                        Vector2.ZERO,
-                        windowController.getWindowDimensions(),
-                        new RectangleRenderable(BACKGROUND_COLOR)
-                );
-        background.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
-        gameObjects().addGameObject(background, Layer.BACKGROUND);
+        var sky = Sky.create(windowController.getWindowDimensions());
+        sky.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
+        gameObjects().addGameObject(sky, Layer.BACKGROUND);
 
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
