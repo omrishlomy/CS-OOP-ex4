@@ -1,7 +1,5 @@
 package pepse.utils;
 
-import java.util.Random;
-
 public class NoiseGenerator {
     private double seed;
     private long default_size;

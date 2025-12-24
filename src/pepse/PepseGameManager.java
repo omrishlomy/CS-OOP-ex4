@@ -12,6 +12,8 @@ import danogl.gui.WindowController;
 import danogl.gui.rendering.Camera;
 import danogl.gui.rendering.RectangleRenderable;
 import danogl.util.Vector2;
+import pepse.utils.pepse.world.Block;
+import pepse.utils.pepse.world.Terrain;
 import pepse.utils.pepse.world.avatar.Avatar;
 import pepse.utils.pepse.world.avatar.EnergyDisplay;
 import pepse.utils.pepse.world.trees.Flora;
@@ -23,7 +25,8 @@ import java.util.List;
 
 // TODO: this is just to check the avatar function. NEED TO CHANGE!
 public class PepseGameManager extends GameManager {
-    private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
+	private static final int seed = 42;
+	private static final Color PLATFORM_COLOR = new Color(212,123,74);
 
     @Override
     public void initializeGame(ImageReader imageReader, SoundReader soundReader, UserInputListener inputListener, WindowController windowController) {
@@ -32,12 +35,13 @@ public class PepseGameManager extends GameManager {
         //background
         var sky = Sky.create(windowController.getWindowDimensions());
         sky.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
-        gameObjects().addGameObject(sky, Layer.BACKGROUND);
-
-        placePlatform(Vector2.of(-1024, 1000), Vector2.ONES.mult(2048));
-        placePlatform(Vector2.of(-512, 700), Vector2.of(1024, 50));
-        placePlatform(Vector2.of(-256, 400), Vector2.of(512, 50));
-        placePlatform(Vector2.of(-128, 100), Vector2.of(256, 50));
+        gameObjects().addGameObject(sky, Layer.BACKGROUND); //may need to change to sky layer
+		//Terrain
+	 Terrain terrain = new Terrain(windowController.getWindowDimensions(),seed);
+	 List<Block> blocks= terrain.createInRange((int)-windowController.getWindowDimensions().x(),(int)windowController.getWindowDimensions().x());
+	 for(Block b:blocks){
+	  gameObjects().addGameObject(b, Layer.STATIC_OBJECTS); //may need to change layer
+	 }
 
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
