@@ -16,6 +16,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.Random;
 
+/**
+ * class responsible of plants creation- tree including leaves and fruits.
+ * @author Lihi & Omri
+ */
 public class Flora {
 
     private static final Color WOOD_COLOR = new Color(100, 50, 20);
@@ -43,12 +47,22 @@ public class Flora {
     private Function<Integer, Integer> getGroundHeight;
     private Consumer<Integer> enrgyAdder;
 
+    /**
+     * constructor
+     * @param getGroundHeight - a function returning the ground height at a specific location
+     * @param energyAdder- a consuner that adds energy to the avatar.
+     * @param randomSeed- seed for random creation.
+     */
     public Flora(Function<Integer, Integer> getGroundHeight, Consumer<Integer> energyAdder, int randomSeed) {
         this.getGroundHeight = getGroundHeight;
         random = new Random(randomSeed);
         this.enrgyAdder = energyAdder;
     }
 
+    /**
+     * a function that creats the needed transitions for leafs movments.
+     * @param leaf a leaf object
+     */
     private void leafTransitions(GameObject leaf){
         // transition for changing leaf angle
         new Transition<Float>(leaf, leaf.renderer()::setRenderableAngle,
@@ -63,37 +77,53 @@ public class Flora {
                 Transition.TransitionType.TRANSITION_BACK_AND_FORTH, null);
     }
 
+    /**
+     * creatinf a leaf
+     * @param position position for creation
+     * @return a leaf game object
+     */
     private GameObject createLeaf(Vector2 position) {
         GameObject leaf = new GameObject(position, LEAF_DIMENSIONS,
                 new RectangleRenderable(ColorSupplier.approximateColor(LEAF_COLOR)));
+        // schedule task for movement.
         ScheduledTask scheduledTask = new ScheduledTask(leaf, random.nextFloat(RANGE_FOR_DELAY_TIME),
                 false, ()-> leafTransitions(leaf));
         return leaf;
     }
 
-
+    /**
+     * creats a tree with all objects: trunk, leaves and fruits.
+     * @param x location for tree
+     * @return a list of all the tree object.
+     */
     private List<GameObject> createTree(int x){
         List<GameObject> tree = new ArrayList<>();
         int groundHeight =  getGroundHeight.apply(x);
         int treeHeight = random.nextInt(MAX_TREE_HEIGHT - MIN_TREE_HEIGHT) + MIN_TREE_HEIGHT;
 
         //TODO tree trunk should be a block. than we can remove the set tag
-        GameObject treeTrunck = new GameObject(Vector2.of(x, groundHeight-treeHeight),
+
+        //create the tree trunk
+        GameObject treeTrunk = new GameObject(Vector2.of(x, groundHeight-treeHeight),
                 Vector2.of(TREE_WIDTH, treeHeight),
                 new RectangleRenderable(ColorSupplier.approximateColor(WOOD_COLOR)));
-        treeTrunck.setTag("Block");
-        treeTrunck.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
-        treeTrunck.physics().preventIntersectionsFromDirection(Vector2.ZERO);
-        tree.add(treeTrunck);
+        treeTrunk.setTag("Block");
+        treeTrunk.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
+        treeTrunk.physics().preventIntersectionsFromDirection(Vector2.ZERO);
+        tree.add(treeTrunk);
 
+        // loop fo creating leaves.
         for (int i=0; i < LEAF_NUMBER; i++){
             for (int j=0; j < LEAF_NUMBER; j++){
+                // calculating podition
                 Vector2 position = Vector2.of(x-LEAF_DIMENSIONS.y()*(LEAF_OUTSDIE - i),
                         groundHeight - treeHeight -LEAF_DIMENSIONS.y()*(j+1));
+                // randomly choose if to place a leaf in the position.
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_LEAFS){
                     GameObject leaf = createLeaf(position);
                     tree.add(leaf);
                 }
+                // randomly choose if to place a fruit in the position.
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_FRUIT){
                     GameObject fruit = new Fruit(position, FRUIT_DIMENSIONS,
                             new OvalRenderable(FRUIT_COLORS[random.nextInt(FRUIT_COLORS.length)]),
@@ -105,9 +135,17 @@ public class Flora {
         return tree;
     }
 
+    /**
+     * creates trees in a given range.
+     * @param minX range left bound
+     * @param maxX range right bound
+     * @return list of trees.
+     */
     public List<GameObject> createInRange(int minX, int maxX){
         List<GameObject> trees = new ArrayList<>();
+        // loop for creating trees.
         for (int i=minX;i<maxX;i+= 30 ){ //TODO should be Block.size instead of 30
+            // randomly choose if to plant a tree in the current location.
             if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_TREE){
                 trees.addAll(createTree(i));
             }

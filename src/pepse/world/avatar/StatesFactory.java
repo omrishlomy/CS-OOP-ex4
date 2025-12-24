@@ -4,6 +4,10 @@ import danogl.gui.UserInputListener;
 
 import java.awt.event.KeyEvent;
 
+/**
+ * Factory of avatar states. implements the state design pattern.
+ * @author Lihi & Omri
+ */
 public class StatesFactory {
     private static final int REQUIRED_FOR_JUMP = 20;
     private static final int REQUIRED_FOR_RUN = 2;
@@ -14,22 +18,31 @@ public class StatesFactory {
     public static final AvatarState groundState = new GroundState();
     public static final AvatarState airState = new AirState();
 
+    /**
+     * Representing the ground state - the avatar is touching the ground
+     * @author Lihi & Omri
+     * @see pepse.utils.pepse.world.avatar.AvatarState
+     */
     private static class GroundState implements AvatarState {
+        /**
+         * updates the state.
+         * @param avatar- the avatar object.
+         * @param listener- input listener for key presses.
+         */
         @Override
         public void update(Avatar avatar, UserInputListener listener) {
-
-
+            // check if we fell, meaning we are in the aur and need to switch state.
             if (avatar.getVelocity().y() > THRESHOLD_FOR_Y_MOVEMENT) {
                 avatar.setState(airState);
                 return;
             }
 
-
             int xVelocity = 0;
             int yVelocity = 0;
             int energyCost = 0;
             int avatarEnergy = avatar.getEnergy();
-            // on the ground it costs to run - so check we have enough energy
+            // on the ground it costs to run - so check we have enough energy. update the x velocity
+            // according to the key presses.
             if (avatarEnergy >= REQUIRED_FOR_RUN) {
                 if (listener.isKeyPressed(KeyEvent.VK_LEFT)) {
                     xVelocity -= 1;
@@ -38,19 +51,21 @@ public class StatesFactory {
                     xVelocity += 1;
                 }
             }
-
+            // if we did move, add the codt to the energy cost.
             if (xVelocity != 0){
                 energyCost += REQUIRED_FOR_RUN;
             }
 
+            // check for jump action if we have enough energy for it.
             if (avatarEnergy >= REQUIRED_FOR_JUMP) {
                 if (listener.isKeyPressed(KeyEvent.VK_SPACE)) {
                     yVelocity = 1;
                     energyCost+= REQUIRED_FOR_JUMP;
                 }
             }
+            // move the player by calling it's function.
             avatar.movePlayer(xVelocity, yVelocity, energyCost);
-
+            // if we didn't move we gain energy on the ground, add the energy and update animations.
             if (xVelocity == 0 && yVelocity == 0 ){
                 avatar.addEnergy(IDLE_ADDED_ENERGY);
                 avatar.idleState();
@@ -58,7 +73,17 @@ public class StatesFactory {
         }
     }
 
+    /**
+     * Representing the air state - the avatar is in the air
+     * @author Lihi & Omri
+     * @see pepse.utils.pepse.world.avatar.AvatarState
+     */
     private static class AirState implements AvatarState {
+        /**
+         * updates the state.
+         * @param avatar- the avatar object.
+         * @param listener- input listener for key presses.
+         */
         @Override
         public void update(Avatar avatar, UserInputListener listener) {
             boolean jumping = false;
@@ -81,8 +106,9 @@ public class StatesFactory {
                     energyCost+= REQUIRED_FOR_DOUBLE_JUMP;
                 }
             }
+            // move the player by calling it's function.
             avatar.movePlayer(xVelocity, yVelocity, energyCost);
-
+            // set the animation to jump if needed.
             if (xVelocity == 0 && yVelocity == 0) {
                 avatar.jumpState();
             }
