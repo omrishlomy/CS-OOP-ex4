@@ -14,8 +14,11 @@ import danogl.gui.rendering.RectangleRenderable;
 import danogl.util.Vector2;
 import pepse.utils.pepse.world.avatar.Avatar;
 import pepse.utils.pepse.world.avatar.EnergyDisplay;
+import pepse.utils.pepse.world.trees.Flora;
 
 import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 // TODO: this is just to check the avatar function. NEED TO CHANGE!
 public class PepseGameManager extends GameManager {
@@ -57,6 +60,13 @@ public class PepseGameManager extends GameManager {
         platform.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
         platform.setTag("Block");
         gameObjects().addGameObject(platform, Layer.STATIC_OBJECTS);
+
+        // add trees
+        Flora flora = new Flora(Integer->1000, 42);
+        List<GameObject> tree = flora.createInRange(-1024, 1024);
+        for (GameObject gameObject : tree) {
+            gameObjects().addGameObject(gameObject, Layer.STATIC_OBJECTS);
+        }
     }
 
     public static void main(String[] args) {

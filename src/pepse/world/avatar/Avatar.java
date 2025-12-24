@@ -11,10 +11,15 @@ import pepse.utils.pepse.world.LocationObserver;
 
 import java.util.function.Consumer;
 
+/**
+ * Controls the avatar game object
+ * @author Lihi & Omri
+ * @see danogl.GameObject
+ */
 public class Avatar extends GameObject {
     static final double TIME_BETWEEN_CLIPS = 0.3;
     static final int MAX_NUM_OBSERVERS = 100;
-    static final Vector2 AVATAR_DIMENSIOMS = Vector2.ONES.mult(50);
+    static final Vector2 AVATAR_DIMENSIOMS = Vector2.of(40, 50);
 
     private static final String[] IDLE_PATHS = {"src\\assets\\idle_0.png",
             "src\\assets\\idle_1.png", "src\\assets\\idle_2.png", "src\\assets\\idle_3.png"};
@@ -38,27 +43,45 @@ public class Avatar extends GameObject {
     private Consumer<Integer> energyListner;
     private AnimationRenderable idleAnimation, runAnimation, jumpAnimation;
 
+    /**
+     * creates AnimationRenderable objects from the images. sets the 3 animation - idle, run, jump according
+     *  to their respective images.
+     * @param imageReader- used to read the images.
+     */
     private void createAnimations(ImageReader imageReader) {
+        // create a list of the idle images by order.
         Renderable[] idleImages = new Renderable[IDLE_PATHS.length];
         for (int i = 0; i < IDLE_PATHS.length; i++) {
             idleImages[i] = imageReader.readImage(IDLE_PATHS[i], true);
         }
+        // create the idle animation from the list
         idleAnimation = new AnimationRenderable(idleImages, TIME_BETWEEN_CLIPS);
 
+        // create a list of the run images by order.
         Renderable[] runImages = new Renderable[RUN_PATHS.length];
         for (int i = 0; i < RUN_PATHS.length; i++) {
             runImages[i] = imageReader.readImage(RUN_PATHS[i], true);
         }
+        // create the run animation from the list
         runAnimation = new AnimationRenderable(runImages, TIME_BETWEEN_CLIPS);
 
+        //create a list of the jump images by order.
         Renderable[] jumpImages = new Renderable[JUMP_PATHS.length];
         for (int i = 0; i < JUMP_PATHS.length; i++) {
             jumpImages[i] = imageReader.readImage(JUMP_PATHS[i], true);
         }
+        // create the jump animation from the list
         jumpAnimation = new AnimationRenderable(jumpImages, TIME_BETWEEN_CLIPS);
     }
 
-    public  Avatar(Vector2 topLeftCorner, UserInputListener inputListener, ImageReader imageReader,
+    /**
+     * constructor for the avatar
+     * @param topLeftCorner
+     * @param inputListener
+     * @param imageReader
+     * @param energyListner
+     */
+    public Avatar(Vector2 topLeftCorner, UserInputListener inputListener, ImageReader imageReader,
                    Consumer<Integer> energyListner) {
         super(topLeftCorner, AVATAR_DIMENSIOMS,
                 null);
@@ -93,6 +116,7 @@ public class Avatar extends GameObject {
         // if we collided with the ground, move to ground state.
         if (other.getTag().equals("Block")) {
             setState(StatesFactory.groundState);
+            this.transform().setVelocityY(0);
         }
     }
 
