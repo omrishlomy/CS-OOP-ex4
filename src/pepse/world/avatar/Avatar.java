@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  * @see danogl.GameObject
  */
 public class Avatar extends GameObject {
-    private static final double TIME_BETWEEN_CLIPS = 0.3;
+    private static final double TIME_BETWEEN_CLIPS = 0.1;
     private static final int MAX_NUM_OBSERVERS = 100;
     private static final Vector2 AVATAR_DIMENSIOMS = Vector2.of(40, 50);
 
@@ -32,14 +32,14 @@ public class Avatar extends GameObject {
     private static final float AVATAR_X_VELOCITY = 400;
     private static final float AVATAR_Y_VELOCITY = -650;
     private static final float GRAVITY = 600;
-    private static final int MAX_ENERGY = 100;
+    private static final float MAX_ENERGY = 100f;
     private static final float  VERTICAL_COLLISION_NORMAL = -0.9f;
 
     private final LocationObserver[] locationObservers = new LocationObserver[MAX_NUM_OBSERVERS];
     private final UserInputListener inputListener;
 
     private int numObservers = 0;
-    private int energy;
+    private float energy;
     private AvatarState avatarState = StatesFactory.groundState;
     // the consumer is the update energy display. and will be called upon changes in the energy.
     private Consumer<Integer> energyListner;
@@ -156,18 +156,18 @@ public class Avatar extends GameObject {
      * @param verticalMove-  direction of movement on the y axis.
      * @param energyCost- energy to subtract for the movement.
      */
-    public void movePlayer(int horizontalMove,  int verticalMove, int energyCost) {
+    public void movePlayer(int horizontalMove,  int verticalMove, float energyCost) {
         this.transform().setVelocityX(horizontalMove * AVATAR_X_VELOCITY);
 
         if (horizontalMove != 0){
             // we moved horizontally so notify the observers.
             notifyLocationObservers(getTopLeftCorner().x());
-            runState();
+//            runState();
         }
         if (verticalMove != 0){
             // we moved vertically meaning we are in the air. set state and animation accordingly.
             this.transform().setVelocityY(verticalMove * AVATAR_Y_VELOCITY);
-            jumpState();
+//            jumpState();
             setState(StatesFactory.airState);
         }
 
@@ -178,7 +178,7 @@ public class Avatar extends GameObject {
      * getter for avatar energy.
      * @return avatar energy.
      */
-    public int getEnergy(){
+    public float getEnergy(){
         return energy;
     }
 
@@ -186,7 +186,7 @@ public class Avatar extends GameObject {
      * subtracts from the avatar energy.
      * @param amount-amount to subtract.
      */
-    public void subtructFromEnergy(int amount) {
+    public void subtructFromEnergy(float amount) {
         if (amount <= energy) {
             energy = energy - amount;
             // notify energy displayer on the change.
@@ -198,7 +198,7 @@ public class Avatar extends GameObject {
      * adds to the avatar energy.
      * @param amount amount to add.
      */
-    public void addEnergy(int amount) {
+    public void addEnergy(float amount) {
         energy = Math.min(energy + amount, MAX_ENERGY);
         // notify energy displayer on the change.
         notifyEnergyDisplay();
@@ -216,28 +216,34 @@ public class Avatar extends GameObject {
      * notify the energy display upon energy change.
      */
     private void notifyEnergyDisplay() {
-        energyListner.accept(energy);
+        energyListner.accept((int) energy);
     }
 
     /**
-     * sets the animation to the running animation.
+     * sets the animation to the running animation, if it's not already used.
      */
     public void runState() {
-        this.renderer().setRenderable(runAnimation);
+        if (this.renderer().getRenderable() != runAnimation){
+            this.renderer().setRenderable(runAnimation);
+        }
     }
 
     /**
-     * sets the animation to the jump animation.
+     * sets the animation to the jump animation, if it's not already used.
      */
     public void jumpState() {
-        this.renderer().setRenderable(jumpAnimation);
+        if (this.renderer().getRenderable() != jumpAnimation){
+            this.renderer().setRenderable(jumpAnimation);
+        }
     }
 
     /**
-     * sets the animation to the idle animation.
+     * sets the animation to the idle animation, if it's not already used.
      */
     public void idleState() {
-        this.renderer().setRenderable(idleAnimation);
+        if  (this.renderer().getRenderable() != idleAnimation){
+            this.renderer().setRenderable(idleAnimation);
+        }
     }
 
 }

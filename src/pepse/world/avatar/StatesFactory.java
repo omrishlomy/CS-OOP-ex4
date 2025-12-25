@@ -10,7 +10,7 @@ import java.awt.event.KeyEvent;
  */
 public class StatesFactory {
     private static final int REQUIRED_FOR_JUMP = 20;
-    private static final int REQUIRED_FOR_RUN = 2;
+    private static final float REQUIRED_FOR_RUN = 0.5f;
     private static final int REQUIRED_FOR_DOUBLE_JUMP = 50;
     private static final int IDLE_ADDED_ENERGY = 1;
     private static final int THRESHOLD_FOR_Y_MOVEMENT = 100;
@@ -39,8 +39,8 @@ public class StatesFactory {
 
             int xVelocity = 0;
             int yVelocity = 0;
-            int energyCost = 0;
-            int avatarEnergy = avatar.getEnergy();
+            float energyCost = 0;
+            float avatarEnergy = avatar.getEnergy();
             // on the ground it costs to run - so check we have enough energy. update the x velocity
             // according to the key presses.
             if (avatarEnergy >= REQUIRED_FOR_RUN) {
@@ -51,7 +51,7 @@ public class StatesFactory {
                     xVelocity += 1;
                 }
             }
-            // if we did move, add the codt to the energy cost.
+            // if we did move, add the cost to the energy cost. and set animation
             if (xVelocity != 0){
                 energyCost += REQUIRED_FOR_RUN;
             }
@@ -65,8 +65,16 @@ public class StatesFactory {
             }
             // move the player by calling it's function.
             avatar.movePlayer(xVelocity, yVelocity, energyCost);
-            // if we didn't move we gain energy on the ground, add the energy and update animations.
-            if (xVelocity == 0 && yVelocity == 0 ){
+
+            // set animation according to action
+            if (yVelocity != 0) {
+                avatar.jumpState();
+            }
+            else if (xVelocity != 0) {
+                avatar.runState();
+            }
+            else{
+                // we didn't move on any axis, we are on idle.
                 avatar.addEnergy(IDLE_ADDED_ENERGY);
                 avatar.idleState();
             }
@@ -89,7 +97,7 @@ public class StatesFactory {
             boolean jumping = false;
             int xVelocity = 0;
             int yVelocity = 0;
-            int energyCost = 0;
+            float energyCost = 0;
             // in the air we can "run" with no costs.
             if (listener.isKeyPressed(KeyEvent.VK_LEFT)){
                 xVelocity -= 1;
@@ -99,7 +107,7 @@ public class StatesFactory {
             }
 
             // we are already in the air - so jumping is actually double jumping.
-            int avatarEnergy = avatar.getEnergy();
+            float avatarEnergy = avatar.getEnergy();
             if (avatar.getVelocity().y() > 0 && avatarEnergy >=REQUIRED_FOR_DOUBLE_JUMP){
                 if (listener.isKeyPressed(KeyEvent.VK_SPACE)){
                     yVelocity = 1;

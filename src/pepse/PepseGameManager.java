@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.List;
 
 // TODO: this is just to check the avatar function. NEED TO CHANGE!
+// TODO: changed the energy required for running to 0.5 to get smoother run.
 public class PepseGameManager extends GameManager {
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
 
@@ -52,11 +53,11 @@ public class PepseGameManager extends GameManager {
         placePlatform(Vector2.of(-128, 100), Vector2.of(256, 50));
 
         // add trees
-        Flora flora = new Flora(Integer->1000, avatar::addEnergy, 42);
-        List<GameObject> tree = flora.createInRange(-1024, 1024);
-        for (GameObject gameObject : tree) {
-            gameObjects().addGameObject(gameObject, Layer.STATIC_OBJECTS);
-        }
+       Flora flora = new Flora(Integer->1000, avatar::addEnergy, 42);
+       List<GameObject> tree = flora.createInRange(-1024, 1024);
+       for (GameObject gameObject : tree) {
+           gameObjects().addGameObject(gameObject, Layer.STATIC_OBJECTS);
+       }
     }
 
     private void placePlatform(Vector2 pos, Vector2 size) {
