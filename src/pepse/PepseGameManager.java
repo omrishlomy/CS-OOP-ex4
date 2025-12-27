@@ -16,6 +16,7 @@ import pepse.utils.pepse.world.Block;
 import pepse.utils.pepse.world.Terrain;
 import pepse.utils.pepse.world.avatar.Avatar;
 import pepse.utils.pepse.world.avatar.EnergyDisplay;
+import pepse.utils.pepse.world.daynight.Night;
 import pepse.utils.pepse.world.trees.Flora;
 import pepse.utils.pepse.world.Sky;
 
@@ -27,7 +28,9 @@ import java.util.List;
 // TODO: changed the energy required for running to 0.5 to get smoother run.
 public class PepseGameManager extends GameManager {
  private static final double SEED = 42;
+ private static final double RATIO =0.67;
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
+	private static final float DAY_NIGHT_CYCLE_DURATION = 5.5f;
 
     private Avatar avatar;
 
@@ -38,7 +41,9 @@ public class PepseGameManager extends GameManager {
         //Sky
 	 	GameObject sky = Sky.create(windowController.getWindowDimensions());
         gameObjects().addGameObject(sky, Layer.BACKGROUND);
-
+		//night
+	 	GameObject night = Night.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION);
+		 gameObjects().addGameObject(night, Layer.BACKGROUND);
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
 		//Yerrain
