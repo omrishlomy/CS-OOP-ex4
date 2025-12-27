@@ -17,9 +17,9 @@ import java.util.function.Consumer;
  * @see danogl.GameObject
  */
 public class Avatar extends GameObject {
-    static final double TIME_BETWEEN_CLIPS = 0.3;
-    static final int MAX_NUM_OBSERVERS = 100;
-    static final Vector2 AVATAR_DIMENSIOMS = Vector2.of(40, 50);
+    private static final double TIME_BETWEEN_CLIPS = 0.1;
+    private static final int MAX_NUM_OBSERVERS = 100;
+    private static final Vector2 AVATAR_DIMENSIOMS = Vector2.of(40, 50);
 
     private static final String[] IDLE_PATHS = {"src\\assets\\idle_0.png",
             "src\\assets\\idle_1.png", "src\\assets\\idle_2.png", "src\\assets\\idle_3.png"};
@@ -28,16 +28,18 @@ public class Avatar extends GameObject {
             "src\\assets\\run_4.png", "src\\assets\\run_5.png"};
     private static final String[] JUMP_PATHS = {"src\\assets\\jump_0.png",
             "src\\assets\\jump_1.png", "src\\assets\\jump_2.png", "src\\assets\\jump_3.png"};
+
     private static final float AVATAR_X_VELOCITY = 400;
     private static final float AVATAR_Y_VELOCITY = -650;
     private static final float GRAVITY = 600;
-    private static final int MAX_ENERGY = 100;
+    private static final float MAX_ENERGY = 100f;
+    private static final float  VERTICAL_COLLISION_NORMAL = -0.9f;
 
     private final LocationObserver[] locationObservers = new LocationObserver[MAX_NUM_OBSERVERS];
     private final UserInputListener inputListener;
 
     private int numObservers = 0;
-    private int energy;
+    private float energy;
     private AvatarState avatarState = StatesFactory.groundState;
     // the consumer is the update energy display. and will be called upon changes in the energy.
     private Consumer<Integer> energyListner;
@@ -76,10 +78,10 @@ public class Avatar extends GameObject {
 
     /**
      * constructor for the avatar
-     * @param topLeftCorner
-     * @param inputListener
-     * @param imageReader
-     * @param energyListner
+     * @param topLeftCorner- initial position
+     * @param inputListener- listener for key press
+     * @param imageReader- image reader
+     * @param energyListner- a function that will be called upon changes in the energy.
      */
     public Avatar(Vector2 topLeftCorner, UserInputListener inputListener, ImageReader imageReader,
                    Consumer<Integer> energyListner) {
@@ -96,12 +98,17 @@ public class Avatar extends GameObject {
         energy = MAX_ENERGY;
     }
 
+    /**
+     * update the object in frames.
+     * @param delta-time for updating
+     */
     @Override
     public void update(float delta) {
         super.update(delta);
+        // call the state update.
         avatarState.update(this, inputListener);
 
-        // flip logic
+        // flip logic- if we turn right flip the avatar face to the right.
         float xVel = getVelocity().x();
         if (xVel < 0) {
             renderer().setIsFlippedHorizontally(true);
@@ -110,77 +117,133 @@ public class Avatar extends GameObject {
         }
     }
 
+    /**
+     * Handles avatar's collisions with other objects.
+     * @param other- object we colllided with
+     * @param collision- holds collision data
+     */
     @Override
     public void onCollisionEnter(GameObject other, Collision collision) {
         super.onCollisionEnter(other, collision);
         // if we collided with the ground, move to ground state.
-        if (other.getTag().equals("Block")) {
+        if (other.getTag().equals("Block") && collision.getNormal().y() < VERTICAL_COLLISION_NORMAL) {
             setState(StatesFactory.groundState);
             this.transform().setVelocityY(0);
         }
     }
 
+    /**
+     * add a location observer to thr list.
+     * @param observer- a location observer object that wants to subscribe to the avatar movement.
+     */
     public void registerLocationObserver(LocationObserver observer) {
         locationObservers[numObservers++] = observer;
     }
 
+    /**
+     * notify location observers upon location change.
+     * @param x- the avatar position on the x axis.
+     */
     private void notifyLocationObservers(float x) {
         for (int i = 0; i < numObservers; i++) {
             locationObservers[i].onLocationChanged(x);
         }
     }
 
-    public void movePlayer(int horizontalMove,  int verticalMove, int energyCost) {
+    /**
+     * Handles players movement in the world.
+     * @param horizontalMove- direction of movement on the x axis.
+     * @param verticalMove-  direction of movement on the y axis.
+     * @param energyCost- energy to subtract for the movement.
+     */
+    public void movePlayer(int horizontalMove,  int verticalMove, float energyCost) {
         this.transform().setVelocityX(horizontalMove * AVATAR_X_VELOCITY);
 
         if (horizontalMove != 0){
             // we moved horizontally so notify the observers.
             notifyLocationObservers(getTopLeftCorner().x());
-            runState();
+//            runState();
         }
         if (verticalMove != 0){
+            // we moved vertically meaning we are in the air. set state and animation accordingly.
             this.transform().setVelocityY(verticalMove * AVATAR_Y_VELOCITY);
-            jumpState();
+//            jumpState();
             setState(StatesFactory.airState);
         }
 
         subtructFromEnergy(energyCost);
     }
 
-    public int getEnergy(){
+    /**
+     * getter for avatar energy.
+     * @return avatar energy.
+     */
+    public float getEnergy(){
         return energy;
     }
 
-    public void subtructFromEnergy(int amount) {
+    /**
+     * subtracts from the avatar energy.
+     * @param amount-amount to subtract.
+     */
+    public void subtructFromEnergy(float amount) {
         if (amount <= energy) {
             energy = energy - amount;
+            // notify energy displayer on the change.
             notifyEnergyDisplay();
         }
     }
 
-    public void addEnergy(int amount) {
+    /**
+     * adds to the avatar energy.
+     * @param amount amount to add.
+     */
+    public void addEnergy(float amount) {
         energy = Math.min(energy + amount, MAX_ENERGY);
+        // notify energy displayer on the change.
         notifyEnergyDisplay();
     }
 
+    /**
+     * setter fot the avatar state.
+     * @param avatarState state we want to move to.
+     */
     public void setState(AvatarState avatarState) {
         this.avatarState = avatarState;
     }
 
+    /**
+     * notify the energy display upon energy change.
+     */
     private void notifyEnergyDisplay() {
-        energyListner.accept(energy);
+        energyListner.accept((int) energy);
     }
 
+    /**
+     * sets the animation to the running animation, if it's not already used.
+     */
     public void runState() {
-        this.renderer().setRenderable(runAnimation);
+        if (this.renderer().getRenderable() != runAnimation){
+            this.renderer().setRenderable(runAnimation);
+        }
     }
 
+    /**
+     * sets the animation to the jump animation, if it's not already used.
+     */
     public void jumpState() {
-        this.renderer().setRenderable(jumpAnimation);
+        if (this.renderer().getRenderable() != jumpAnimation){
+            this.renderer().setRenderable(jumpAnimation);
+        }
     }
 
+    /**
+     * sets the animation to the idle animation, if it's not already used.
+     */
     public void idleState() {
-        this.renderer().setRenderable(idleAnimation);
+        if  (this.renderer().getRenderable() != idleAnimation){
+            this.renderer().setRenderable(idleAnimation);
+        }
     }
 
 }

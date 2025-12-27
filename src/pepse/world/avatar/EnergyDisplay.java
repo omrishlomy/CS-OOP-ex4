@@ -7,9 +7,19 @@ import danogl.util.Vector2;
 
 import java.util.function.Supplier;
 
+/**
+ * responsible for representing the avatar's energy.
+ * @author Lihi & Omri
+ * @see danogl.GameObject
+ */
 public class EnergyDisplay extends GameObject {
     private final TextRenderable textRenderable;
 
+    /**
+     * constructor
+     * @param topLeftCorner- position for the text display.
+     * @param dimensions- text dimensions.
+     */
     public EnergyDisplay(Vector2 topLeftCorner, Vector2 dimensions) {
         super(topLeftCorner, dimensions, null);
         // set it to be relative to the screen and not the whole world
@@ -18,6 +28,10 @@ public class EnergyDisplay extends GameObject {
         renderer().setRenderable(textRenderable);
     }
 
+    /**
+     * updates the display upon energy changes.
+     * @param energy-new energy.
+     */
     public void updateEnergyDisplay(int energy) {
         textRenderable.setString(energy + "%");
     }
