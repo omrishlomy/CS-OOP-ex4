@@ -18,6 +18,7 @@ import pepse.utils.pepse.world.avatar.Avatar;
 import pepse.utils.pepse.world.avatar.EnergyDisplay;
 import pepse.utils.pepse.world.daynight.Night;
 import pepse.utils.pepse.world.daynight.Sun;
+import pepse.utils.pepse.world.daynight.SunHalo;
 import pepse.utils.pepse.world.trees.Flora;
 import pepse.utils.pepse.world.Sky;
 
@@ -45,8 +46,12 @@ public class PepseGameManager extends GameManager {
 		//night
 	 	GameObject night = Night.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION);
 		 gameObjects().addGameObject(night, Layer.BACKGROUND);
+
 		 //sun
 	 	GameObject sun = Sun.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION);
+	 //sun halo
+	 GameObject sunHalo = SunHalo.create(sun);
+	 gameObjects().addGameObject(sunHalo, Layer.BACKGROUND);
 		 gameObjects().addGameObject(sun, Layer.BACKGROUND);
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
@@ -67,7 +72,7 @@ public class PepseGameManager extends GameManager {
 
 
         // add trees
-       Flora flora = new Flora(Integer->1000, avatar::addEnergy, 42);
+       Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, 42);
        List<GameObject> tree = flora.createInRange(-1024, 1024);
        for (GameObject gameObject : tree) {
            gameObjects().addGameObject(gameObject, Layer.STATIC_OBJECTS);

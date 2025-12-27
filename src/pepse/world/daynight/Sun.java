@@ -13,7 +13,7 @@ public class Sun {
  private static final float SUN_SIZE = 100;
  private static final float RATIO = 0.67f; //this var is used in different classes and cant be passed -
  // maybe create a factory for all inits
- private static Vector2 initialPosition = new Vector2(0,0);
+ protected static Vector2 initialPosition = new Vector2(0,0);
  public static GameObject create(Vector2 windoeDimensions, float cycleLength){
   Renderable renderable = new OvalRenderable(SUN_COLOR);
   initialPosition = windoeDimensions.mult(0.5f);
@@ -29,5 +29,8 @@ public class Sun {
 		  null
 		  );
   return sun;
+ }
+ public Vector2 getSunLocation(){
+  return initialPosition;
  }
 }

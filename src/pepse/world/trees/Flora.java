@@ -45,7 +45,7 @@ public class Flora {
 
 
     private int gameSeed;
-    private Function<Integer, Integer> getGroundHeight;
+    private Function<Float, Float> getGroundHeight;
     private Consumer<Integer> enrgyAdder;
 
     /**
@@ -54,7 +54,7 @@ public class Flora {
      * @param energyAdder- a consuner that adds energy to the avatar.
      * @param gameSeed- seed for random creation.
      */
-    public Flora(Function<Integer, Integer> getGroundHeight, Consumer<Integer> energyAdder, int gameSeed) {
+    public Flora(Function<Float, Float> getGroundHeight, Consumer<Integer> energyAdder, int gameSeed) {
         this.getGroundHeight = getGroundHeight;
         this.gameSeed = gameSeed;
         this.enrgyAdder = energyAdder;
@@ -99,11 +99,11 @@ public class Flora {
      * @param random a random object with seed that dependent on the x position.
      * @return a list of all the tree object.
      */
-    private List<GameObject> createTree(int x, Random random) {
+    private List<GameObject> createTree(float x, Random random) {
         // to ensure creation of the same tree in the same position, we'll create a Random object for each
         // tree with a seed that is dependent in the x coordinate
         List<GameObject> tree = new ArrayList<>();
-        int groundHeight =  getGroundHeight.apply(x);
+        float groundHeight =  getGroundHeight.apply(x);
         int treeHeight = random.nextInt(MAX_TREE_HEIGHT - MIN_TREE_HEIGHT) + MIN_TREE_HEIGHT;
 
         //TODO tree trunk should be a block. than we can remove the set tag
