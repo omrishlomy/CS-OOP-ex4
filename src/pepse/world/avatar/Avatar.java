@@ -33,7 +33,7 @@ public class Avatar extends GameObject {
     private static final float AVATAR_Y_VELOCITY = -650;
     private static final float GRAVITY = 600;
     private static final float MAX_ENERGY = 100f;
-    private static final float  VERTICAL_COLLISION_NORMAL = -0.9f;
+    private static final float  VERTICAL_COLLISION_NORMAL = -0.5f;
 
     private final LocationObserver[] locationObservers = new LocationObserver[MAX_NUM_OBSERVERS];
     private final UserInputListener inputListener;
