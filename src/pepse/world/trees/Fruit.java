@@ -17,10 +17,13 @@ import java.util.function.Consumer;
  * @see danogl.GameObject
  */
 public class Fruit extends GameObject {
+    private static final int INVISIBLE = 0;
+    private static final int VISIBLE = 1;
     private static final int ENERGY_ADDED = 10;
     private static final int TIME_TO_REAPEAR = 30;
 
     private Consumer<Integer> energyAdder;
+    private boolean available = true;
 
     /**
      * constructor
@@ -38,7 +41,18 @@ public class Fruit extends GameObject {
      * methode for showing the fruit again after eaten
      */
     private void regrow(){
-        renderer().setOpaqueness(1);
+
+        renderer().setOpaqueness(VISIBLE);
+        available = true;
+    }
+
+    @Override
+    public boolean shouldCollideWith(GameObject other) {
+        // if the fruit is not available for eating, ignore collisions.
+        if (! available){
+            return false;
+        }
+        return super.shouldCollideWith(other);
     }
 
     /**
@@ -51,8 +65,9 @@ public class Fruit extends GameObject {
         super.onCollisionEnter(other, collision);
         // the avatar collided with us, so we need to add energy for it
         energyAdder.accept(ENERGY_ADDED);
-        // disappear
-        renderer().setOpaqueness(0);
+        // disappear and don't allow eating until regrow
+        renderer().setOpaqueness(INVISIBLE);
+        available = false;
         // schedule reappearance.
         ScheduledTask scheduledTask = new ScheduledTask(this, TIME_TO_REAPEAR,
                 false, this::regrow);

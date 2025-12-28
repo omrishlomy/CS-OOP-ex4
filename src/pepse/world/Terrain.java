@@ -10,7 +10,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: the avatar excpect that the tag of the ground blocks is "Block".
+//TODO implement the onLoactionChange methode
 public class Terrain implements LocationObserver {
  private static final double GROUND_WINDOW_RATIO = 0.67;
  private static final double FACTOR=210;
@@ -26,6 +26,7 @@ public class Terrain implements LocationObserver {
 
     @Override
     public void onLocationChanged(float location) {}
+
 	 public Terrain(Vector2 windowDimensions,double seed){
 	 this.windowDimensions =  windowDimensions;
 	  groundHeightAtX0 = windowDimensions.y()*(GROUND_WINDOW_RATIO);

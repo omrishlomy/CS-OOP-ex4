@@ -29,15 +29,16 @@ import java.util.List;
 // TODO: this is just to check the avatar function. NEED TO CHANGE!
 // TODO: changed the energy required for running to 0.5 to get smoother run.
 public class PepseGameManager extends GameManager {
- private static final double SEED = 42;
- private static final double RATIO =0.67;
+    private static final double SEED = 42;
+    private static final double RATIO =0.67;
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
-	private static final float DAY_NIGHT_CYCLE_DURATION = 30f;
+    private static final float DAY_NIGHT_CYCLE_DURATION = 30f;
 
     private Avatar avatar;
 
     @Override
-    public void initializeGame(ImageReader imageReader, SoundReader soundReader, UserInputListener inputListener, WindowController windowController) {
+    public void initializeGame(ImageReader imageReader, SoundReader soundReader,
+                               UserInputListener inputListener, WindowController windowController) {
         super.initializeGame(imageReader, soundReader, inputListener, windowController);
 
         //Sky
@@ -45,24 +46,27 @@ public class PepseGameManager extends GameManager {
         gameObjects().addGameObject(sky, Layer.BACKGROUND);
 		//night
 	 	GameObject night = Night.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION);
-		 gameObjects().addGameObject(night, Layer.BACKGROUND);
+        gameObjects().addGameObject(night, Layer.BACKGROUND);
 
 		 //sun
 	 	GameObject sun = Sun.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION);
-	 //sun halo
-	 GameObject sunHalo = SunHalo.create(sun);
-	 gameObjects().addGameObject(sunHalo, Layer.BACKGROUND);
+         //sun halo
+         GameObject sunHalo = SunHalo.create(sun);
+         gameObjects().addGameObject(sunHalo, Layer.BACKGROUND);
 		 gameObjects().addGameObject(sun, Layer.BACKGROUND);
+
+        // energy display.
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
-		//Yerrain
-	 Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED);
-	 List<Block> blocks = terrain.createInRange(- (int)windowController.getWindowDimensions().x(),(int) windowController.getWindowDimensions().x());
-	 for(Block b : blocks){
-	  gameObjects().addGameObject(b, Layer.STATIC_OBJECTS);
-	 }
+		//Terrain
+        Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED);
+        List<Block> blocks = terrain.createInRange(- (int)windowController.getWindowDimensions().x(),
+                (int) windowController.getWindowDimensions().x());
+        for(Block b : blocks){
+          gameObjects().addGameObject(b, Layer.STATIC_OBJECTS);
+        }
 
-
+        // avatar
         var avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader,
                 energyDisplay::updateEnergyDisplay);
         setCamera(new Camera(avatar, Vector2.ZERO,
@@ -70,15 +74,20 @@ public class PepseGameManager extends GameManager {
         gameObjects().addGameObject(avatar, Layer.DEFAULT);
         this.avatar = avatar;
 
-
         // add trees
-       Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, 42);
-       List<GameObject> tree = flora.createInRange(-1024, 1024);
+       Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED);
+       List<GameObject> tree = flora.createInRange(- (int)windowController.getWindowDimensions().x(),
+               (int) windowController.getWindowDimensions().x());
        for (GameObject gameObject : tree) {
            gameObjects().addGameObject(gameObject, Layer.STATIC_OBJECTS);
        }
+
+       // register location listeners
+        avatar.registerLocationObserver(terrain);
+        avatar.registerLocationObserver(flora);
     }
 
+    //TODO delete at the end, it's was just for testing before terrain.
     private void placePlatform(Vector2 pos, Vector2 size) {
         var platform = new GameObject(pos, size, new RectangleRenderable(PLATFORM_COLOR));
         platform.physics().preventIntersectionsFromDirection(Vector2.ZERO);

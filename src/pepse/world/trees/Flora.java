@@ -8,7 +8,10 @@ import danogl.gui.rendering.OvalRenderable;
 import danogl.gui.rendering.RectangleRenderable;
 import danogl.util.Vector2;
 import pepse.utils.ColorSupplier;
+import pepse.utils.pepse.world.Block;
+import pepse.utils.pepse.world.LocationObserver;
 
+import javax.management.ValueExp;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +21,16 @@ import java.util.function.Function;
 import java.util.Random;
 
 /**
- * class responsible of plants creation- tree including leaves and fruits.
+ * class responsible for plants creation - tree including leaves and fruits.
  * @author Lihi & Omri
  */
-public class Flora {
+//TODO implement the onLocationChange methode.
+public class Flora implements LocationObserver {
 
     private static final Color WOOD_COLOR = new Color(100, 50, 20);
     private static final Color LEAF_COLOR = new Color(50, 200, 30);
-    private static final int MAX_TREE_HEIGHT = 150;
-    private static final int MIN_TREE_HEIGHT = 70;
+    private static final int MAX_TREE_HEIGHT = 8;
+    private static final int MIN_TREE_HEIGHT = 3;
     private static final int TREE_WIDTH = 25;
     private static final double RANGE_FOR_RANDOM = 1.0;
     private static final double THRESHOLD_FOR_TREE = 0.9;
@@ -39,12 +43,12 @@ public class Flora {
     private static final float LEAF_ANGLE_TRANSITION_TIME= 1.5f;
     private static final float LEAF_SIZE_MANIPULATION = 1.1f;
     private static final float LEAF_SIZE_TRANSITION_TIME= 2.0f;
-    private static final double THRESHOLD_FOR_FRUIT = 0.8;
+    private static final double THRESHOLD_FOR_FRUIT = 0.9;
     private static final Vector2 FRUIT_DIMENSIONS = Vector2.ONES.mult(18);
     private static final Color[] FRUIT_COLORS = {Color.RED, Color.ORANGE, Color.YELLOW};
 
 
-    private int gameSeed;
+    private double gameSeed;
     private Function<Float, Float> getGroundHeight;
     private Consumer<Integer> enrgyAdder;
 
@@ -54,7 +58,7 @@ public class Flora {
      * @param energyAdder- a consuner that adds energy to the avatar.
      * @param gameSeed- seed for random creation.
      */
-    public Flora(Function<Float, Float> getGroundHeight, Consumer<Integer> energyAdder, int gameSeed) {
+    public Flora(Function<Float, Float> getGroundHeight, Consumer<Integer> energyAdder, double gameSeed) {
         this.getGroundHeight = getGroundHeight;
         this.gameSeed = gameSeed;
         this.enrgyAdder = energyAdder;
@@ -93,6 +97,21 @@ public class Flora {
         return leaf;
     }
 
+    private List<GameObject> createTreeTrunk(float x, float groundHeight, int treeHeight, Random random) {
+        List<GameObject> trunk = new ArrayList<>();
+        for (int i = 0; i < treeHeight; i++) {
+            GameObject currBlock = new Block(Vector2.of(x, groundHeight - (treeHeight-i)*Block.SIZE),
+                    new RectangleRenderable(ColorSupplier.approximateColor(WOOD_COLOR)));
+            trunk.add(currBlock);
+        }
+        return trunk;
+    }
+
+    @Override
+    public void onLocationChanged(float location) {
+
+    }
+
     /**
      * creats a tree with all objects: trunk, leaves and fruits.
      * @param x x location for tree
@@ -106,23 +125,14 @@ public class Flora {
         float groundHeight =  getGroundHeight.apply(x);
         int treeHeight = random.nextInt(MAX_TREE_HEIGHT - MIN_TREE_HEIGHT) + MIN_TREE_HEIGHT;
 
-        //TODO tree trunk should be a block. than we can remove the set tag
-
-        //create the tree trunk
-        GameObject treeTrunk = new GameObject(Vector2.of(x, groundHeight-treeHeight),
-                Vector2.of(TREE_WIDTH, treeHeight),
-                new RectangleRenderable(ColorSupplier.approximateColor(WOOD_COLOR)));
-        treeTrunk.setTag("Block");
-        treeTrunk.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
-        treeTrunk.physics().preventIntersectionsFromDirection(Vector2.ZERO);
-        tree.add(treeTrunk);
+        tree.addAll(createTreeTrunk(x, groundHeight, treeHeight, random));
 
         // loop fo creating leaves.
         for (int i=0; i < LEAF_NUMBER; i++){
             for (int j=0; j < LEAF_NUMBER; j++){
-                // calculating podition
+                // calculating position
                 Vector2 position = Vector2.of(x-LEAF_DIMENSIONS.y()*(LEAF_OUTSDIE - i),
-                        groundHeight - treeHeight -LEAF_DIMENSIONS.y()*(j+1));
+                        groundHeight - treeHeight*Block.SIZE -LEAF_DIMENSIONS.y()*(j+1));
                 // randomly choose if to place a leaf in the position.
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_LEAFS){
                     GameObject leaf = createLeaf(position, random);
