@@ -158,7 +158,7 @@ public class Flora implements LocationObserver {
     public List<TreeComponents> createInRange(int minX, int maxX){
         List<TreeComponents> trees = new ArrayList<>();
         // loop for creating trees.
-        for (int i=minX;i<maxX;i+= 30 ){ //TODO should be Block.size instead of 30
+        for (int i=minX;i<maxX;i+= Block.SIZE ){
             // randomly choose if to plant a tree in the current location.
             // to ensure creation of the same tree in the same position, we'll create a Random object for each
             // tree with a seed that is dependent in the x coordinate
