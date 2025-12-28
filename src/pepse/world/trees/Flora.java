@@ -35,8 +35,8 @@ public class Flora implements LocationObserver {
     private static final double RANGE_FOR_RANDOM = 1.0;
     private static final double THRESHOLD_FOR_TREE = 0.9;
     private static final double THRESHOLD_FOR_LEAFS = 0.4;
-    private static final int LEAF_NUMBER = 9;
-    private static final int LEAF_OUTSDIE = 3;
+    private static final int LEAF_NUMBER = 6;
+    private static final int LEAF_OUTSDIE = 2;
     private static final Vector2 LEAF_DIMENSIONS = Vector2.ONES.mult(20);
     private static final float RANGE_FOR_DELAY_TIME = 1.5f;
     private static final float LEAF_ANGLE_ROTATION = 15f;
@@ -91,6 +91,9 @@ public class Flora implements LocationObserver {
     private GameObject createLeaf(Vector2 position, Random random) {
         GameObject leaf = new GameObject(position, LEAF_DIMENSIONS,
                 new RectangleRenderable(ColorSupplier.approximateColor(LEAF_COLOR)));
+        // leaves move only through transitions, so we can set the mass as immovable and avoid
+        // unnecessary calculations.
+        leaf.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
         // schedule task for movement.
         ScheduledTask scheduledTask = new ScheduledTask(leaf, random.nextFloat(RANGE_FOR_DELAY_TIME),
                 false, ()-> leafTransitions(leaf));
@@ -107,25 +110,21 @@ public class Flora implements LocationObserver {
         return trunk;
     }
 
-    @Override
-    public void onLocationChanged(float location) {
-
-    }
-
     /**
      * creats a tree with all objects: trunk, leaves and fruits.
      * @param x x location for tree
      * @param random a random object with seed that dependent on the x position.
      * @return a list of all the tree object.
      */
-    private List<GameObject> createTree(float x, Random random) {
+    private TreeComponents createTree(float x, Random random) {
         // to ensure creation of the same tree in the same position, we'll create a Random object for each
         // tree with a seed that is dependent in the x coordinate
         List<GameObject> tree = new ArrayList<>();
+        TreeComponents treeComponents = new TreeComponents();
         float groundHeight =  getGroundHeight.apply(x);
         int treeHeight = random.nextInt(MAX_TREE_HEIGHT - MIN_TREE_HEIGHT) + MIN_TREE_HEIGHT;
 
-        tree.addAll(createTreeTrunk(x, groundHeight, treeHeight, random));
+        treeComponents.trunk.addAll(createTreeTrunk(x, groundHeight, treeHeight, random));
 
         // loop fo creating leaves.
         for (int i=0; i < LEAF_NUMBER; i++){
@@ -136,18 +135,18 @@ public class Flora implements LocationObserver {
                 // randomly choose if to place a leaf in the position.
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_LEAFS){
                     GameObject leaf = createLeaf(position, random);
-                    tree.add(leaf);
+                    treeComponents.leavesFruits.add(leaf);
                 }
                 // randomly choose if to place a fruit in the position.
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_FRUIT){
                     GameObject fruit = new Fruit(position, FRUIT_DIMENSIONS,
                             new OvalRenderable(FRUIT_COLORS[random.nextInt(FRUIT_COLORS.length)]),
                             enrgyAdder);
-                    tree.add(fruit);
+                    treeComponents.leavesFruits.add(fruit);
                 }
             }
         }
-        return tree;
+        return treeComponents;
     }
 
     /**
@@ -156,8 +155,8 @@ public class Flora implements LocationObserver {
      * @param maxX range right bound
      * @return list of trees.
      */
-    public List<GameObject> createInRange(int minX, int maxX){
-        List<GameObject> trees = new ArrayList<>();
+    public List<TreeComponents> createInRange(int minX, int maxX){
+        List<TreeComponents> trees = new ArrayList<>();
         // loop for creating trees.
         for (int i=minX;i<maxX;i+= 30 ){ //TODO should be Block.size instead of 30
             // randomly choose if to plant a tree in the current location.
@@ -165,9 +164,23 @@ public class Flora implements LocationObserver {
             // tree with a seed that is dependent in the x coordinate
             Random random = new Random(Objects.hash(i, gameSeed));
             if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_TREE){
-                trees.addAll(createTree(i, random));
+                trees.add(createTree(i, random));
             }
         }
         return trees;
+    }
+
+    @Override
+    public void onLocationChanged(float location) {
+
+    }
+
+    /**
+     * a class for holding the tree object, organizes to different lists. one for trunk and one for leaves
+     * and fruits. will be used to separate the object to different layers.
+     */
+    public static class TreeComponents{
+        public final List<GameObject> trunk = new ArrayList<>();
+        public final List<GameObject> leavesFruits = new ArrayList<>();
     }
 }

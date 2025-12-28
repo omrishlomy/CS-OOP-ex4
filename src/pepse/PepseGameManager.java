@@ -33,6 +33,7 @@ public class PepseGameManager extends GameManager {
     private static final double RATIO =0.67;
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
     private static final float DAY_NIGHT_CYCLE_DURATION = 30f;
+    private static final int LEAVES_AND_FRUIT_LAYER = Layer.BACKGROUND + 10;
 
     private Avatar avatar;
 
@@ -76,11 +77,23 @@ public class PepseGameManager extends GameManager {
 
         // add trees
        Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED);
-       List<GameObject> tree = flora.createInRange(- (int)windowController.getWindowDimensions().x(),
+       List<Flora.TreeComponents> trees = flora.createInRange(0,
                (int) windowController.getWindowDimensions().x());
-       for (GameObject gameObject : tree) {
-           gameObjects().addGameObject(gameObject, Layer.STATIC_OBJECTS);
+       for (Flora.TreeComponents tree : trees) {
+           // add trunk to static layer
+           for (GameObject trunk: tree.trunk){
+               gameObjects().addGameObject(trunk, Layer.STATIC_OBJECTS);
+           }
+           // add leaves and fruit to a different layer
+           for (GameObject leafOrFruit : tree.leavesFruits){
+               gameObjects().addGameObject(leafOrFruit, LEAVES_AND_FRUIT_LAYER);
+           }
        }
+
+       // avoid checking collision between the leaves/fruits with anything that is not the avatar
+        gameObjects().layers().shouldLayersCollide(LEAVES_AND_FRUIT_LAYER, Layer.STATIC_OBJECTS,
+                false);
+       gameObjects().layers().shouldLayersCollide(LEAVES_AND_FRUIT_LAYER, Layer.DEFAULT, true);
 
        // register location listeners
         avatar.registerLocationObserver(terrain);
