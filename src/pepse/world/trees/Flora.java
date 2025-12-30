@@ -1,6 +1,8 @@
 package pepse.utils.pepse.world.trees;
 
 import danogl.GameObject;
+import danogl.collisions.GameObjectCollection;
+import danogl.collisions.Layer;
 import danogl.components.GameObjectPhysics;
 import danogl.components.ScheduledTask;
 import danogl.components.Transition;
@@ -11,14 +13,11 @@ import pepse.utils.ColorSupplier;
 import pepse.utils.pepse.world.Block;
 import pepse.utils.pepse.world.LocationObserver;
 
-import javax.management.ValueExp;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.Random;
 
 /**
  * class responsible for plants creation - tree including leaves and fruits.
@@ -31,7 +30,6 @@ public class Flora implements LocationObserver {
     private static final Color LEAF_COLOR = new Color(50, 200, 30);
     private static final int MAX_TREE_HEIGHT = 8;
     private static final int MIN_TREE_HEIGHT = 3;
-    private static final int TREE_WIDTH = 25;
     private static final double RANGE_FOR_RANDOM = 1.0;
     private static final double THRESHOLD_FOR_TREE = 0.9;
     private static final double THRESHOLD_FOR_LEAFS = 0.4;
@@ -46,22 +44,35 @@ public class Flora implements LocationObserver {
     private static final double THRESHOLD_FOR_FRUIT = 0.9;
     private static final Vector2 FRUIT_DIMENSIONS = Vector2.ONES.mult(18);
     private static final Color[] FRUIT_COLORS = {Color.RED, Color.ORANGE, Color.YELLOW};
+    private static final float SAFETY_RANGE_COEFFICIENT = 1.5f;
+    private static final float DELETE_CHECK_COEFFICIENT = 2.0f;
+    private static final int LEAVES_AND_FRUIT_LAYER = Layer.BACKGROUND + 10;
 
+    private final float bufferForCreation;
+    private final double gameSeed;
+    private final Function<Float, Float> getGroundHeight;
+    private final Consumer<Integer> energyAdder;
+    private final GameObjectCollection gameObjects;
+    private float maxLocationCreated = 0;
+    private float minLocationCreated = 0;
+    private HashMap<Integer, TreeComponents> activeTrees = new HashMap<>();
 
-    private double gameSeed;
-    private Function<Float, Float> getGroundHeight;
-    private Consumer<Integer> enrgyAdder;
 
     /**
      * constructor
-     * @param getGroundHeight - a function returning the ground height at a specific location
-     * @param energyAdder- a consuner that adds energy to the avatar.
-     * @param gameSeed- seed for random creation.
+     * @param getGroundHeight a function returning the ground height at a specific location
+     * @param energyAdder a consuner that adds energy to the avatar.
+     * @param gameSeed a consuner that adds energy to the avatar.
+     * @param windowXSize size of the window
      */
-    public Flora(Function<Float, Float> getGroundHeight, Consumer<Integer> energyAdder, double gameSeed) {
+    public Flora(Function<Float, Float> getGroundHeight, Consumer<Integer> energyAdder, double gameSeed,
+                 float windowXSize, GameObjectCollection gameObjects) {
         this.getGroundHeight = getGroundHeight;
         this.gameSeed = gameSeed;
-        this.enrgyAdder = energyAdder;
+        this.energyAdder = energyAdder;
+        this.gameObjects = gameObjects;
+        bufferForCreation = windowXSize*SAFETY_RANGE_COEFFICIENT;
+        createInRange((int)-windowXSize, (int)windowXSize);
     }
 
     /**
@@ -97,15 +108,20 @@ public class Flora implements LocationObserver {
         // schedule task for movement.
         ScheduledTask scheduledTask = new ScheduledTask(leaf, random.nextFloat(RANGE_FOR_DELAY_TIME),
                 false, ()-> leafTransitions(leaf));
+        // add it to game objects
+        gameObjects.addGameObject(leaf, LEAVES_AND_FRUIT_LAYER);
+
         return leaf;
     }
 
-    private List<GameObject> createTreeTrunk(float x, float groundHeight, int treeHeight, Random random) {
+    private List<GameObject> createTreeTrunk(float x, float groundHeight, int treeHeight) {
         List<GameObject> trunk = new ArrayList<>();
         for (int i = 0; i < treeHeight; i++) {
             GameObject currBlock = new Block(Vector2.of(x, groundHeight - (treeHeight-i)*Block.SIZE),
                     new RectangleRenderable(ColorSupplier.approximateColor(WOOD_COLOR)));
             trunk.add(currBlock);
+            // add it to the game objects as well
+            gameObjects.addGameObject(currBlock, Layer.STATIC_OBJECTS);
         }
         return trunk;
     }
@@ -124,7 +140,7 @@ public class Flora implements LocationObserver {
         float groundHeight =  getGroundHeight.apply(x);
         int treeHeight = random.nextInt(MAX_TREE_HEIGHT - MIN_TREE_HEIGHT) + MIN_TREE_HEIGHT;
 
-        treeComponents.trunk.addAll(createTreeTrunk(x, groundHeight, treeHeight, random));
+        treeComponents.trunk.addAll(createTreeTrunk(x, groundHeight, treeHeight));
 
         // loop fo creating leaves.
         for (int i=0; i < LEAF_NUMBER; i++){
@@ -141,8 +157,10 @@ public class Flora implements LocationObserver {
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_FRUIT){
                     GameObject fruit = new Fruit(position, FRUIT_DIMENSIONS,
                             new OvalRenderable(FRUIT_COLORS[random.nextInt(FRUIT_COLORS.length)]),
-                            enrgyAdder);
+                            energyAdder);
                     treeComponents.leavesFruits.add(fruit);
+                    // add to game objects as well
+                    gameObjects.addGameObject(fruit, LEAVES_AND_FRUIT_LAYER);
                 }
             }
         }
@@ -153,10 +171,8 @@ public class Flora implements LocationObserver {
      * creates trees in a given range.
      * @param minX range left bound
      * @param maxX range right bound
-     * @return list of trees.
      */
-    public List<TreeComponents> createInRange(int minX, int maxX){
-        List<TreeComponents> trees = new ArrayList<>();
+    public void createInRange(int minX, int maxX){
         // loop for creating trees.
         for (int i=minX;i<maxX;i+= Block.SIZE ){
             // randomly choose if to plant a tree in the current location.
@@ -164,15 +180,65 @@ public class Flora implements LocationObserver {
             // tree with a seed that is dependent in the x coordinate
             Random random = new Random(Objects.hash(i, gameSeed));
             if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_TREE){
-                trees.add(createTree(i, random));
+                activeTrees.put(i, createTree(i, random));
             }
         }
-        return trees;
+        // update min and max locations we created trees in.
+        minLocationCreated = Math.min(minLocationCreated, minX);
+        maxLocationCreated = Math.max(maxLocationCreated, maxX);
+
     }
 
     @Override
     public void onLocationChanged(float location) {
+        // check if we need to add flora to our right
+        if (location + bufferForCreation > maxLocationCreated){
+            createInRange((int)maxLocationCreated, (int)(maxLocationCreated + bufferForCreation));
+        }
+        // check if we need to add flora to our left
+        if (location - bufferForCreation < minLocationCreated){
+            createInRange((int)(minLocationCreated - bufferForCreation), (int)minLocationCreated);
+        }
+        // check if we need to delete trees that are too far away
+        deleteTrees(location);
+    }
 
+    private void deleteTrees(float location){
+        List<Integer> keysToRemove = new ArrayList<>();
+        // check if we need to remove trees that far from the avatar
+        for (int x : activeTrees.keySet()){
+            if ((x > location + bufferForCreation*DELETE_CHECK_COEFFICIENT)||
+                    (x < location - bufferForCreation*DELETE_CHECK_COEFFICIENT)) {
+                keysToRemove.add(x);
+                // delete from the game
+                deleteTree(activeTrees.get(x));
+            }
+        }
+        // remove all the keys from the active tree map
+        for (int key:  keysToRemove){
+            activeTrees.remove(key);
+        }
+        // update the range of creation accordingly
+        if (!activeTrees.isEmpty()){
+            minLocationCreated = Collections.min(activeTrees.keySet());
+            maxLocationCreated = Collections.max(activeTrees.keySet());
+        }
+        else{
+            minLocationCreated = 0;
+            maxLocationCreated = 0;
+        }
+
+    }
+
+    private void deleteTree(TreeComponents treeComponents){
+        // remove leaves and fruits
+        for (GameObject gameObject : treeComponents.leavesFruits){
+            gameObjects.removeGameObject(gameObject, LEAVES_AND_FRUIT_LAYER);
+        }
+        // remove trunk
+        for (GameObject gameObject : treeComponents.trunk){
+            gameObjects.removeGameObject(gameObject, Layer.STATIC_OBJECTS);
+        }
     }
 
     /**

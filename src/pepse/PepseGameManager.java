@@ -76,19 +76,8 @@ public class PepseGameManager extends GameManager {
         this.avatar = avatar;
 
         // add trees
-       Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED);
-       List<Flora.TreeComponents> trees = flora.createInRange(0,
-               (int) windowController.getWindowDimensions().x());
-       for (Flora.TreeComponents tree : trees) {
-           // add trunk to static layer
-           for (GameObject trunk: tree.trunk){
-               gameObjects().addGameObject(trunk, Layer.STATIC_OBJECTS);
-           }
-           // add leaves and fruit to a different layer
-           for (GameObject leafOrFruit : tree.leavesFruits){
-               gameObjects().addGameObject(leafOrFruit, LEAVES_AND_FRUIT_LAYER);
-           }
-       }
+       Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED,
+               windowController.getWindowDimensions().x(), gameObjects());
 
        // avoid checking collision between the leaves/fruits with anything that is not the avatar
         gameObjects().layers().shouldLayersCollide(LEAVES_AND_FRUIT_LAYER, Layer.STATIC_OBJECTS,

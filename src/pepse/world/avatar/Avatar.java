@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  */
 public class Avatar extends GameObject {
     private static final double TIME_BETWEEN_CLIPS = 0.1;
-    private static final int MAX_NUM_OBSERVERS = 100;
+    private static final int MAX_NUM_OBSERVERS = 5;
     private static final Vector2 AVATAR_DIMENSIOMS = Vector2.of(40, 50);
 
     private static final String[] IDLE_PATHS = {"src\\assets\\idle_0.png",
