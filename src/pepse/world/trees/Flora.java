@@ -16,6 +16,7 @@ import pepse.utils.pepse.world.LocationObserver;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -50,7 +51,8 @@ public class Flora implements LocationObserver {
     private final double gameSeed;
     private final Function<Float, Float> getGroundHeight;
     private final Consumer<Integer> energyAdder;
-    private final GameObjectCollection gameObjects;
+    private final BiConsumer<GameObject,Integer> addGameObjects;
+    private final BiConsumer<GameObject,Integer> removeGameObjects;
     private float maxLocationCreated = 0;
     private float minLocationCreated = 0;
     private HashMap<Integer, TreeComponents> activeTrees = new HashMap<>();
@@ -64,11 +66,12 @@ public class Flora implements LocationObserver {
      * @param windowXSize size of the window
      */
     public Flora(Function<Float, Float> getGroundHeight, Consumer<Integer> energyAdder, double gameSeed,
-                 float windowXSize, GameObjectCollection gameObjects) {
+                 float windowXSize, BiConsumer<GameObject,Integer> addGameObjects, BiConsumer<GameObject,Integer> removeGameObjects) {
         this.getGroundHeight = getGroundHeight;
         this.gameSeed = gameSeed;
         this.energyAdder = energyAdder;
-        this.gameObjects = gameObjects;
+        this.addGameObjects = addGameObjects;
+        this.removeGameObjects = removeGameObjects;
         bufferForCreation = windowXSize*SAFETY_RANGE_COEFFICIENT;
         createInRange((int)-windowXSize, (int)windowXSize);
     }
@@ -107,7 +110,7 @@ public class Flora implements LocationObserver {
         ScheduledTask scheduledTask = new ScheduledTask(leaf, random.nextFloat(RANGE_FOR_DELAY_TIME),
                 false, ()-> leafTransitions(leaf));
         // add it to game objects
-        gameObjects.addGameObject(leaf, Layer.BACKGROUND);
+        addGameObjects.accept(leaf, Layer.BACKGROUND);
 
         return leaf;
     }
@@ -127,7 +130,7 @@ public class Flora implements LocationObserver {
                     new RectangleRenderable(ColorSupplier.approximateColor(WOOD_COLOR)));
             trunk.add(currBlock);
             // add it to the game objects as well
-            gameObjects.addGameObject(currBlock, Layer.STATIC_OBJECTS);
+            addGameObjects.accept(currBlock, Layer.STATIC_OBJECTS);
         }
         return trunk;
     }
@@ -166,7 +169,7 @@ public class Flora implements LocationObserver {
                             energyAdder);
                     treeComponents.fruits.add(fruit);
                     // add to game objects as well
-                    gameObjects.addGameObject(fruit, Layer.STATIC_OBJECTS);
+                    addGameObjects.accept(fruit, Layer.STATIC_OBJECTS);
                 }
             }
         }
@@ -251,15 +254,15 @@ public class Flora implements LocationObserver {
     private void deleteTree(TreeComponents treeComponents){
         // remove leaves
         for (GameObject gameObject : treeComponents.leaves){
-            gameObjects.removeGameObject(gameObject, Layer.BACKGROUND);
+            removeGameObjects.accept(gameObject, Layer.BACKGROUND);
         }
         //remove fruits
         for (GameObject gameObject : treeComponents.fruits){
-            gameObjects.removeGameObject(gameObject, Layer.STATIC_OBJECTS);
+            removeGameObjects.accept(gameObject, Layer.STATIC_OBJECTS);
         }
         // remove trunk
         for (GameObject gameObject : treeComponents.trunk){
-            gameObjects.removeGameObject(gameObject, Layer.STATIC_OBJECTS);
+            removeGameObjects.accept(gameObject, Layer.STATIC_OBJECTS);
         }
     }
 

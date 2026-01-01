@@ -77,7 +77,7 @@ public class Avatar extends GameObject {
     }
 
     /**
-     *
+     *sets an energy listener for the avatar that will be called upon energy change.
      * @param energyListner a function that will be called upon changes in the energy.
      */
     public void setEnergyListner(Consumer<Integer> energyListner){
