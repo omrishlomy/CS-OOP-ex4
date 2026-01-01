@@ -99,13 +99,13 @@ public class Terrain implements LocationObserver {
 
 	 public void createInRange(int minX,int maxX){
         //TODO: check if we need to create the color for each block, or for the entire range
-	 Renderable renderable = new RectangleRenderable(ColorSupplier.approximateColor(BASE_GROUND_COLOR));
 	 List<Block> blocks = new ArrayList<>((int) windowDimensions.x() / Block.SIZE);
 	 int x=minX;
 	 while(x<=maxX){
          List<Block> blocksInCurrLocation = new ArrayList<>();
 	  float groundY = (float)(Math.floor(groundHeightAt(x)/Block.SIZE)*Block.SIZE);
 	  for(int height=0;height<TERRAIN_DEPTH;height++){
+	 Renderable renderable = new RectangleRenderable(ColorSupplier.approximateColor(BASE_GROUND_COLOR));
 	   Vector2 topLeftCorner = new Vector2(x,groundY+height*Block.SIZE);
        blocksInCurrLocation.add(createOneBlock(topLeftCorner, renderable));
 	  }

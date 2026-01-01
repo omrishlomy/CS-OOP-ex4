@@ -71,6 +71,7 @@ public class PepseGameManager extends GameManager {
         gameObjects().addGameObject(avatar, Layer.DEFAULT);
         this.avatar = avatar;
 
+
         // add trees
        Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED,
                windowController.getWindowDimensions().x(), gameObjects());
