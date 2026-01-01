@@ -61,11 +61,11 @@ public class PepseGameManager extends GameManager {
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
 		//Terrain
-        Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED, gameObjects());
+        Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED, gameObjects()::addGameObject,gameObjects()::removeGameObject);
 
         // avatar
-        var avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader,
-                energyDisplay::updateEnergyDisplay);
+        var avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader);
+		avatar.setEnergyListner(  energyDisplay::updateEnergyDisplay);
         setCamera(new Camera(avatar, Vector2.ZERO,
                 windowController.getWindowDimensions(), windowController.getWindowDimensions()));
         gameObjects().addGameObject(avatar, Layer.DEFAULT);
