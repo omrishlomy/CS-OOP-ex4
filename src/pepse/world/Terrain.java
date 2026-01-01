@@ -13,8 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-//TODO implement the onLoactionChange methode
 public class Terrain implements LocationObserver {
  private static final double GROUND_WINDOW_RATIO = 0.67;
  private static final double FACTOR=210;
@@ -25,18 +26,18 @@ public class Terrain implements LocationObserver {
  private final NoiseGenerator noiseGenerator;
  private final double groundHeightAtX0;
  private final Vector2 windowDimensions;
- private final GameObjectCollection gameObjects;
+ private final BiConsumer<Block,Integer> addGameObjects;
+ private final BiConsumer<Block,Integer> removeGameObjects;
  private final float bufferForCreation;
  private float maxLocationCreated = 0;
  private float minLocationCreated = 0;
  private HashMap<Integer, List<Block>> activeBlocks = new HashMap<>();
 
-
 	private Block createOneBlock(Vector2 topLeftCorner, Renderable renderable)
 	{
 	 Block block =  new Block(topLeftCorner, renderable);
      // add to game
-        gameObjects.addGameObject(block, Layer.STATIC_OBJECTS);
+        addGameObjects.accept(block,Layer.STATIC_OBJECTS);
         return block;
 	}
 
@@ -63,7 +64,7 @@ public class Terrain implements LocationObserver {
                 keysToRemove.add(x);
                 // delete from the game
                 for (Block block : activeBlocks.get(x)){
-                    gameObjects.removeGameObject(block, Layer.STATIC_OBJECTS);
+                   removeGameObjects.accept(block, Layer.STATIC_OBJECTS);
                 }
             }
         }
@@ -82,11 +83,12 @@ public class Terrain implements LocationObserver {
         }
     }
 
-	 public Terrain(Vector2 windowDimensions,double seed, GameObjectCollection gameObjects) {
+	 public Terrain(Vector2 windowDimensions,double seed, BiConsumer<Block,Integer> addGameObjects,BiConsumer<Block,Integer> removeGameObjects) {
 	 this.windowDimensions =  windowDimensions;
 	  groundHeightAtX0 = windowDimensions.y()*(GROUND_WINDOW_RATIO);
 	  this.noiseGenerator = new NoiseGenerator(seed,(int)groundHeightAtX0);
-      this.gameObjects = gameObjects;
+      this.addGameObjects = addGameObjects;
+	  this.removeGameObjects=removeGameObjects;
          createInRange(- (int)windowDimensions.x(), (int) (int)windowDimensions.x());
       bufferForCreation =windowDimensions.x()*SAFETY_RANGE_COEFFICIENT;
 	 }
@@ -99,8 +101,6 @@ public class Terrain implements LocationObserver {
 
 
 	 public void createInRange(int minX,int maxX){
-        //TODO: check if we need to create the color for each block, or for the entire range
-	 List<Block> blocks = new ArrayList<>((int) windowDimensions.x() / Block.SIZE);
 	 int x=minX;
 	 while(x<=maxX){
          List<Block> blocksInCurrLocation = new ArrayList<>();
