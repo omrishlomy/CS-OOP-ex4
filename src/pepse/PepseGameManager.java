@@ -74,7 +74,7 @@ public class PepseGameManager extends GameManager {
 
         // add trees
        Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED,
-               windowController.getWindowDimensions().x(), gameObjects());
+               windowController.getWindowDimensions().x(), gameObjects()::addGameObject,gameObjects()::removeGameObject);
 
        // avoid checking collision between the leaves/fruits with anything that is not the avatar
         gameObjects().layers().shouldLayersCollide(LEAVES_AND_FRUIT_LAYER, Layer.STATIC_OBJECTS,
