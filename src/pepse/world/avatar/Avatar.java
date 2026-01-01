@@ -77,20 +77,25 @@ public class Avatar extends GameObject {
     }
 
     /**
+     *
+     * @param energyListner a function that will be called upon changes in the energy.
+     */
+    public void setEnergyListner(Consumer<Integer> energyListner){
+        this.energyListner = energyListner;
+    }
+
+    /**
      * constructor for the avatar
      * @param topLeftCorner- initial position
      * @param inputListener- listener for key press
      * @param imageReader- image reader
-     * @param energyListner- a function that will be called upon changes in the energy.
      */
-    public Avatar(Vector2 topLeftCorner, UserInputListener inputListener, ImageReader imageReader,
-                   Consumer<Integer> energyListner) {
+    public Avatar(Vector2 topLeftCorner, UserInputListener inputListener, ImageReader imageReader) {
         super(topLeftCorner, AVATAR_DIMENSIOMS,
                 null);
         createAnimations(imageReader);
         this.renderer().setRenderable(idleAnimation);
         this.inputListener = inputListener;
-        this.energyListner = energyListner;
 
         physics().preventIntersectionsFromDirection(Vector2.ZERO);
         this.transform().setAccelerationY(GRAVITY);

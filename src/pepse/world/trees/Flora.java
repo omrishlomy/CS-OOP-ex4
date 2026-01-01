@@ -45,7 +45,6 @@ public class Flora implements LocationObserver {
     private static final Color[] FRUIT_COLORS = {Color.RED, Color.ORANGE, Color.YELLOW};
     private static final float SAFETY_RANGE_COEFFICIENT = 1.5f;
     private static final float DELETE_CHECK_COEFFICIENT = 2.0f;
-    private static final int LEAVES_AND_FRUIT_LAYER = Layer.BACKGROUND + 10;
 
     private final float bufferForCreation;
     private final double gameSeed;
@@ -108,7 +107,7 @@ public class Flora implements LocationObserver {
         ScheduledTask scheduledTask = new ScheduledTask(leaf, random.nextFloat(RANGE_FOR_DELAY_TIME),
                 false, ()-> leafTransitions(leaf));
         // add it to game objects
-        gameObjects.addGameObject(leaf, LEAVES_AND_FRUIT_LAYER);
+        gameObjects.addGameObject(leaf, Layer.BACKGROUND);
 
         return leaf;
     }
@@ -158,16 +157,16 @@ public class Flora implements LocationObserver {
                 // randomly choose if to place a leaf in the position.
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_LEAFS){
                     GameObject leaf = createLeaf(position, random);
-                    treeComponents.leavesFruits.add(leaf);
+                    treeComponents.leaves.add(leaf);
                 }
                 // randomly choose if to place a fruit in the position.
                 if (random.nextDouble(RANGE_FOR_RANDOM) > THRESHOLD_FOR_FRUIT){
                     GameObject fruit = new Fruit(position, FRUIT_DIMENSIONS,
                             new OvalRenderable(FRUIT_COLORS[random.nextInt(FRUIT_COLORS.length)]),
                             energyAdder);
-                    treeComponents.leavesFruits.add(fruit);
+                    treeComponents.fruits.add(fruit);
                     // add to game objects as well
-                    gameObjects.addGameObject(fruit, LEAVES_AND_FRUIT_LAYER);
+                    gameObjects.addGameObject(fruit, Layer.STATIC_OBJECTS);
                 }
             }
         }
@@ -250,9 +249,13 @@ public class Flora implements LocationObserver {
      * @param treeComponents- holds the game objects that create the tree in the game.
      */
     private void deleteTree(TreeComponents treeComponents){
-        // remove leaves and fruits
-        for (GameObject gameObject : treeComponents.leavesFruits){
-            gameObjects.removeGameObject(gameObject, LEAVES_AND_FRUIT_LAYER);
+        // remove leaves
+        for (GameObject gameObject : treeComponents.leaves){
+            gameObjects.removeGameObject(gameObject, Layer.BACKGROUND);
+        }
+        //remove fruits
+        for (GameObject gameObject : treeComponents.fruits){
+            gameObjects.removeGameObject(gameObject, Layer.STATIC_OBJECTS);
         }
         // remove trunk
         for (GameObject gameObject : treeComponents.trunk){
@@ -267,6 +270,7 @@ public class Flora implements LocationObserver {
      */
     public static class TreeComponents{
         public final List<GameObject> trunk = new ArrayList<>();
-        public final List<GameObject> leavesFruits = new ArrayList<>();
+        public final List<GameObject> leaves = new ArrayList<>();
+        public final List<GameObject> fruits = new ArrayList<>();
     }
 }
