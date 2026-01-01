@@ -26,8 +26,6 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-// TODO: this is just to check the avatar function. NEED TO CHANGE!
-// TODO: changed the energy required for running to 0.5 to get smoother run.
 //TODO: set sun to always be in the center
 public class PepseGameManager extends GameManager {
     private static final double SEED = 42;
@@ -84,15 +82,6 @@ public class PepseGameManager extends GameManager {
        // register location listeners
         avatar.registerLocationObserver(terrain);
         avatar.registerLocationObserver(flora);
-    }
-
-    //TODO delete at the end, it's was just for testing before terrain.
-    private void placePlatform(Vector2 pos, Vector2 size) {
-        var platform = new GameObject(pos, size, new RectangleRenderable(PLATFORM_COLOR));
-        platform.physics().preventIntersectionsFromDirection(Vector2.ZERO);
-        platform.physics().setMass(GameObjectPhysics.IMMOVABLE_MASS);
-        platform.setTag("Block");
-        gameObjects().addGameObject(platform, Layer.STATIC_OBJECTS);
     }
 
     public static void main(String[] args) {
