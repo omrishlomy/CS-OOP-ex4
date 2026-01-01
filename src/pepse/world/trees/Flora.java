@@ -23,7 +23,6 @@ import java.util.function.Function;
  * class responsible for plants creation - tree including leaves and fruits.
  * @author Lihi & Omri
  */
-//TODO implement the onLocationChange methode.
 public class Flora implements LocationObserver {
 
     private static final Color WOOD_COLOR = new Color(100, 50, 20);
@@ -114,8 +113,16 @@ public class Flora implements LocationObserver {
         return leaf;
     }
 
+    /**
+     * creating the trunk of a tree
+     * @param x location of the tree on the x-axis
+     * @param groundHeight height of the ground in location x
+     * @param treeHeight wanted height of the tree
+     * @return list of game objects creating a trunk
+     */
     private List<GameObject> createTreeTrunk(float x, float groundHeight, int treeHeight) {
         List<GameObject> trunk = new ArrayList<>();
+        // create blocks to be the tree trunck according to wanted height
         for (int i = 0; i < treeHeight; i++) {
             GameObject currBlock = new Block(Vector2.of(x, groundHeight - (treeHeight-i)*Block.SIZE),
                     new RectangleRenderable(ColorSupplier.approximateColor(WOOD_COLOR)));
@@ -189,6 +196,10 @@ public class Flora implements LocationObserver {
 
     }
 
+    /**
+     * controls reaction to avatar movements.
+     * @param location avatar location on the x-axis
+     */
     @Override
     public void onLocationChanged(float location) {
         // check if we need to add flora to our right
@@ -203,6 +214,10 @@ public class Flora implements LocationObserver {
         deleteTrees(location);
     }
 
+    /**
+     * checks and deletes trees that are too far from the avatar if needed.
+     * @param location avatar's location on the x-axis
+     */
     private void deleteTrees(float location){
         List<Integer> keysToRemove = new ArrayList<>();
         // check if we need to remove trees that far from the avatar
@@ -230,6 +245,10 @@ public class Flora implements LocationObserver {
 
     }
 
+    /**
+     * deletes a single tree from the game
+     * @param treeComponents- holds the game objects that create the tree in the game.
+     */
     private void deleteTree(TreeComponents treeComponents){
         // remove leaves and fruits
         for (GameObject gameObject : treeComponents.leavesFruits){
@@ -242,8 +261,9 @@ public class Flora implements LocationObserver {
     }
 
     /**
-     * a class for holding the tree object, organizes to different lists. one for trunk and one for leaves
-     * and fruits. will be used to separate the object to different layers.
+     * a class for holding the all the game objects that together create a tree.
+     * organizes to different lists: one for trunk and one for leaves and fruits.
+     * will be used to separate the object to different layers.
      */
     public static class TreeComponents{
         public final List<GameObject> trunk = new ArrayList<>();

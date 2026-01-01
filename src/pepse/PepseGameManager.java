@@ -28,6 +28,7 @@ import java.util.List;
 
 // TODO: this is just to check the avatar function. NEED TO CHANGE!
 // TODO: changed the energy required for running to 0.5 to get smoother run.
+//TODO: set sun to always be in the center
 public class PepseGameManager extends GameManager {
     private static final double SEED = 42;
     private static final double RATIO =0.67;
@@ -60,12 +61,7 @@ public class PepseGameManager extends GameManager {
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
 		//Terrain
-        Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED);
-        List<Block> blocks = terrain.createInRange(- (int)windowController.getWindowDimensions().x(),
-                (int) windowController.getWindowDimensions().x());
-        for(Block b : blocks){
-          gameObjects().addGameObject(b, Layer.STATIC_OBJECTS);
-        }
+        Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED, gameObjects());
 
         // avatar
         var avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader,
