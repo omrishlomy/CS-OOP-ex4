@@ -23,6 +23,7 @@ import java.util.function.Function;
 /**
  * class responsible for plants creation - tree including leaves and fruits.
  * @author Lihi & Omri
+ * @see pepse.utils.pepse.world.LocationObserver
  */
 public class Flora implements LocationObserver {
 
@@ -270,6 +271,7 @@ public class Flora implements LocationObserver {
      * a class for holding the all the game objects that together create a tree.
      * organizes to different lists: one for trunk and one for leaves and fruits.
      * will be used to separate the object to different layers.
+     * @author Lihi & Omri
      */
     public static class TreeComponents{
         public final List<GameObject> trunk = new ArrayList<>();
