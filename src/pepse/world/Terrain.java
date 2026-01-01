@@ -31,6 +31,7 @@ public class Terrain implements LocationObserver {
  private float minLocationCreated = 0;
  private HashMap<Integer, List<Block>> activeBlocks = new HashMap<>();
 
+
 	private Block createOneBlock(Vector2 topLeftCorner, Renderable renderable)
 	{
 	 Block block =  new Block(topLeftCorner, renderable);
