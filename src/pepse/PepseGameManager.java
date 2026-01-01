@@ -26,7 +26,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-
+// TODO: this is just to check the avatar function. NEED TO CHANGE!
 // TODO: changed the energy required for running to 0.5 to get smoother run.
 //TODO: set sun to always be in the center
 public class PepseGameManager extends GameManager {
@@ -34,10 +34,9 @@ public class PepseGameManager extends GameManager {
     private static final double RATIO =0.67;
     private static final Color PLATFORM_COLOR = new Color(212, 123, 74);
     private static final float DAY_NIGHT_CYCLE_DURATION = 30f;
+    private static final int LEAVES_AND_FRUIT_LAYER = Layer.BACKGROUND + 10;
 
     private Avatar avatar;
-    private Terrain terrain;
-    private Flora flora;
 
     @Override
     public void initializeGame(ImageReader imageReader, SoundReader soundReader,
@@ -61,23 +60,26 @@ public class PepseGameManager extends GameManager {
         // energy display.
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
-
 		//Terrain
-        terrain = new Terrain(windowController.getWindowDimensions(),SEED, gameObjects());
+        Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED, gameObjects());
 
         // avatar
-        avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader);
-        avatar.setEnergyListner(energyDisplay::updateEnergyDisplay);
+        var avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader,
+                energyDisplay::updateEnergyDisplay);
         setCamera(new Camera(avatar, Vector2.ZERO,
                 windowController.getWindowDimensions(), windowController.getWindowDimensions()));
         gameObjects().addGameObject(avatar, Layer.DEFAULT);
+        this.avatar = avatar;
 
 
         // add trees
-       flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED,
+       Flora flora = new Flora(terrain::groundHeightAt, avatar::addEnergy, SEED,
                windowController.getWindowDimensions().x(), gameObjects());
 
-
+       // avoid checking collision between the leaves/fruits with anything that is not the avatar
+        gameObjects().layers().shouldLayersCollide(LEAVES_AND_FRUIT_LAYER, Layer.STATIC_OBJECTS,
+                false);
+       gameObjects().layers().shouldLayersCollide(LEAVES_AND_FRUIT_LAYER, Layer.DEFAULT, true);
 
        // register location listeners
         avatar.registerLocationObserver(terrain);
