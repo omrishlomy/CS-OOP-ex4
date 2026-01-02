@@ -8,9 +8,6 @@ import danogl.util.Vector2;
 
 import java.util.function.Consumer;
 
-//TODO: I'm assuming the only object that collides with the fruit is the avatar. make sure that is true
-// with the layers manipulation or overriding should collide with.
-
 /**
  * represents a fruit in the game
  * @author Lihi & Omri
@@ -46,6 +43,11 @@ public class Fruit extends GameObject {
         available = true;
     }
 
+    /**
+     * updates should collide with methode according to the fruit availability.
+     * @param other object to check if we should collide with
+     * @return boolean indicating if a collision should happen between the objects.
+     */
     @Override
     public boolean shouldCollideWith(GameObject other) {
         // if the fruit is not available for eating, ignore collisions.

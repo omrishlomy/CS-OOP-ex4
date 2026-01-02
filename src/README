@@ -1,0 +1,50 @@
+lihi.sofri, omrishlomy
+322974965, 208394718
+
+Avatar Implementation:
+The Avatar is implemented within the world.avatar package.
+Avatar Class: representing the player. It handles physics, user input, and triggers the LocationObserver
+pattern to notify other world elements of its movement.
+AvatarState (Interface): representing the avatar state. affecting the avatar behaviour according to the state.
+because the only factor affecting behaviour is if the avatar is on the ground or in the air, we implemented
+two states- ground and air.
+StatesFactory: Implements a Factory pattern to manage state transitions and reuse state objects. it holds
+two nested classes implementing the state interface: groundState and AirState.
+EnergyDisplay: Located in the UI package, this class handles the visual representation of the energy bar.
+
+Energy change (State Pattern)
+We chose the State Pattern to manage the Avatar's behavior including energy.
+The Avatar holds a reference to a current AvatarState. In every frame, the Avatar delegates the energy
+calculations, and the decisions of executing a movement, to the state's update method.
+The states (AirState or GroundState) can also decide when to transition the
+avatar to a different state.
+When the avatar collides with a block, it transitions to ground state.
+
+Energy UI
+We used a Functional Interface, using Consumer, to link the Avatar with the EnergyDisplay.
+The Avatar doesn't know the EnergyDisplay class directly. instead, it gets a consumer in the constructor and
+triggers it whenever theenergy value changes.
+
+Trees Implementation
+The Avatar is implemented within the world.trees package.
+Flora Class: The primary manager for plant life. It implements LocationObserver, allowing it to react to the
+avatar’s movement.
+TreeComponents (Static Nested Class): A data container used by Flora to group all parts of a single tree
+(trunk, leaves, and fruits).
+Flora stores these components in a HashMap (mapped by their X-coordinate).
+This allows the system to easily track, create, and remove specific trees.
+Fruit Class: representing a fruit in the game. uses the Consumer callback provided by the Avatar to increase
+the player's energy upon consumption.
+
+Infinite World:
+By implementing onLocationChanged, the Flora and Terrain classes manages a "sliding window" of active objects.
+It generates new trees ahead of the player and deletes those left far behind.
+we passed to those classes a reference to the addGameObject and removeGameObject methods to allow them to
+generate and delete objects independently, while not giving them full access to the game manager or the
+objects collection.
+
+we separated components into different layers to avoid unnecessary calculations: trunks and fruits are in the
+Static layer, while leaves are in Background. Terrain is in the static layer, avatar in the default and the
+rest are in the background.
+
+to allow a smoother game experience, we changed the energy required for running to 0.5 points.

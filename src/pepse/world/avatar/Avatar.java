@@ -167,12 +167,10 @@ public class Avatar extends GameObject {
         if (horizontalMove != 0){
             // we moved horizontally so notify the observers.
             notifyLocationObservers(getTopLeftCorner().x());
-//            runState();
         }
         if (verticalMove != 0){
             // we moved vertically meaning we are in the air. set state and animation accordingly.
             this.transform().setVelocityY(verticalMove * AVATAR_Y_VELOCITY);
-//            jumpState();
             setState(StatesFactory.airState);
         }
 
