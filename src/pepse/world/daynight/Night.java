@@ -10,9 +10,19 @@ import pepse.utils.ColorSupplier;
 
 import java.awt.*;
 
+/**
+ * class for handling the day\night
+ */
 public class Night {
  private static final Color BLACK = new Color(0, 0, 0);
  private static final float MIDNIGHT_OPACITY = 0.5f;
+
+ /**
+  *
+  * @param windowDimensions
+  * @param cycleLength
+  * @return
+  */
  public static GameObject create(Vector2 windowDimensions, float cycleLength){
   Renderable renderable = new RectangleRenderable(ColorSupplier.approximateColor(BLACK));
   GameObject night = new GameObject(Vector2.ZERO,windowDimensions,renderable);

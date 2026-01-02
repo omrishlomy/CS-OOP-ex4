@@ -50,18 +50,18 @@ public class PepseGameManager extends GameManager {
 	 	GameObject night = Night.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION);
         gameObjects().addGameObject(night, Layer.BACKGROUND);
 
-		 //sun
-	 	GameObject sun = Sun.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION);
-         //sun halo
-         GameObject sunHalo = SunHalo.create(sun);
-         gameObjects().addGameObject(sunHalo, Layer.BACKGROUND);
-		 gameObjects().addGameObject(sun, Layer.BACKGROUND);
 
         // energy display.
         EnergyDisplay energyDisplay = new EnergyDisplay(Vector2.ZERO, Vector2.of(100, 40));
         gameObjects().addGameObject(energyDisplay, Layer.UI);
 		//Terrain
         Terrain terrain = new Terrain(windowController.getWindowDimensions(),SEED, gameObjects()::addGameObject,gameObjects()::removeGameObject);
+		 //sun
+	 	GameObject sun = Sun.create(windowController.getWindowDimensions(),DAY_NIGHT_CYCLE_DURATION,terrain::groundHeightAt);
+         //sun halo
+         GameObject sunHalo = SunHalo.create(sun);
+         gameObjects().addGameObject(sunHalo, Layer.BACKGROUND);
+		 gameObjects().addGameObject(sun, Layer.BACKGROUND);
 
         // avatar
         var avatar = new Avatar(Vector2.of(0, 0), inputListener, imageReader);
