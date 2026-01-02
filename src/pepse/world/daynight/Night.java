@@ -19,9 +19,9 @@ public class Night {
 
  /**
   *
-  * @param windowDimensions
-  * @param cycleLength
-  * @return
+  * @param windowDimensions of the screen
+  * @param cycleLength of a day
+  * @return the night game object (which is a black screen with changing opacity)
   */
  public static GameObject create(Vector2 windowDimensions, float cycleLength){
   Renderable renderable = new RectangleRenderable(ColorSupplier.approximateColor(BLACK));
@@ -33,7 +33,7 @@ public class Night {
 		  0f,
 		  MIDNIGHT_OPACITY,
 		  Transition.CUBIC_INTERPOLATOR_FLOAT,
-		  cycleLength,
+		  cycleLength/2f,
 		  Transition.TransitionType.TRANSITION_BACK_AND_FORTH,
 		  null
 		  );
